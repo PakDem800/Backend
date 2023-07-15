@@ -7,8 +7,13 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var plotPriceRouter = require('./routes/PlotPrice')
+var allotmentformRouter = require('./routes/allotmentform')
+var commissionRouter = require('./routes/commission')
+var ledgerRouter = require('./routes/ledger')
+var expenditureRouter = require('./routes/expenditure')
+var plotRouter = require('./routes/Plots')
+var AgentRouter = require('./routes/Agents')
 
 var app = express();
 
@@ -22,8 +27,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
+app.use('/allotmentForm',allotmentformRouter)
+app.use('/commission' , commissionRouter)
+app.use('/ledger' , ledgerRouter)
+app.use('/expenditure',expenditureRouter)
+app.use('/plotprice',plotPriceRouter)
+app.use('/Plots' , plotRouter)
+app.use('/Agents' , AgentRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
