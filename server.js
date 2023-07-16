@@ -14,6 +14,11 @@ var ledgerRouter = require('./routes/ledger')
 var expenditureRouter = require('./routes/expenditure')
 var plotRouter = require('./routes/Plots')
 var AgentRouter = require('./routes/Agents')
+var investorRegistrationRouter = require('./routes/registration')
+var AgentVouchersRouter = require('./routes/AgentVouchers')
+var AgentPaymentListRouter = require('./routes/AgentPaymentList')
+var ApplicationFormRecordRouter = require('./routes/ApplicationFormRecord')
+var ReceiptFinderRouter = require('./routes/ReceiptFInder')
 
 var app = express();
 
@@ -35,6 +40,11 @@ app.use('/expenditure',expenditureRouter)
 app.use('/plotprice',plotPriceRouter)
 app.use('/Plots' , plotRouter)
 app.use('/Agents' , AgentRouter)
+app.use('/RegistrationOfInvestor' , investorRegistrationRouter)
+app.use('/AgentVouchers' , AgentVouchersRouter)
+app.use('/AgentPaymentList' , AgentPaymentListRouter)
+app.use('/ApplicationFormRecord',ApplicationFormRecordRouter)
+app.use('/ReceiptofFile' , ReceiptFinderRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
