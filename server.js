@@ -19,6 +19,15 @@ var AgentVouchersRouter = require('./routes/AgentVouchers')
 var AgentPaymentListRouter = require('./routes/AgentPaymentList')
 var ApplicationFormRecordRouter = require('./routes/ApplicationFormRecord')
 var ReceiptFinderRouter = require('./routes/ReceiptFInder')
+var AgentWiseFileRouter = require('./routes/AgentWiseFile')
+var AgentCommssionRouter = require('./routes/AgentCommission')
+var PlotListDetailsRouter = require('./routes/PlotListDetails')
+var MainFormFilterRouter = require('./routes/MainFormWithFilter')
+var CAPaymentRouter = require('./routes/CAPayment')
+var CashPaymentRouter = require('./routes/CashPayment')
+var OnlinePaymentRouter = require('./routes/OnlinePayment')
+var AllPaymentRouter = require('./routes/AllPayment')
+
 
 var app = express();
 
@@ -45,6 +54,16 @@ app.use('/AgentVouchers' , AgentVouchersRouter)
 app.use('/AgentPaymentList' , AgentPaymentListRouter)
 app.use('/ApplicationFormRecord',ApplicationFormRecordRouter)
 app.use('/ReceiptofFile' , ReceiptFinderRouter)
+app.use('/AgentWiseFile' , AgentWiseFileRouter)
+app.use('/agentCommission' , AgentCommssionRouter)
+app.use('/PlotListDetails' ,PlotListDetailsRouter)
+//is ka name ni yaad
+app.use('/MainFormFilter' , MainFormFilterRouter)
+app.use('/CAPayment' ,CAPaymentRouter)
+app.use('/CashPayment' ,CashPaymentRouter)
+app.use('/OnlinePayment',OnlinePaymentRouter)
+app.use('/AllPayment',AllPaymentRouter)
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
