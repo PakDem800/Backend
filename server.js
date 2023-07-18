@@ -27,6 +27,10 @@ var CAPaymentRouter = require('./routes/CAPayment')
 var CashPaymentRouter = require('./routes/CashPayment')
 var OnlinePaymentRouter = require('./routes/OnlinePayment')
 var AllPaymentRouter = require('./routes/AllPayment')
+var PlotCancellationRouter = require('./routes/PlotCancellation')
+var PlotAllotmentRouter = require('./routes/PlotAllotment')
+var paymentScheduleRouter = require('./routes/PaymentSchedule')
+var receiptRouter = require('./routes/receipts')
 
 
 var app = express();
@@ -63,6 +67,11 @@ app.use('/CAPayment' ,CAPaymentRouter)
 app.use('/CashPayment' ,CashPaymentRouter)
 app.use('/OnlinePayment',OnlinePaymentRouter)
 app.use('/AllPayment',AllPaymentRouter)
+app.use('/PlotCancellationLetters' , PlotCancellationRouter)
+app.use('/PlotAllotment' , PlotAllotmentRouter)
+app.use('/PaymentSchedule' ,paymentScheduleRouter)
+app.use('/receipt',receiptRouter)
+
 
 
 // catch 404 and forward to error handler
