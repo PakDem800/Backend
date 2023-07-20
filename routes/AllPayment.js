@@ -9,7 +9,7 @@ router.get('/', async function (req, res, next) {
   try {
     //will be from user
     const startDate = '2021-05-02';
-    const endDate = '2021-06-30';
+    const endDate = '2021-05-03';
 
     const mainForms = await prisma.mainAppForm.findMany({
       where: {

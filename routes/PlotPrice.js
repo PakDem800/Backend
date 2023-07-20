@@ -20,4 +20,54 @@ router.get('/', async function (req, res, next) {
   }
 });
 
+// create plot price
+router.post('/createPlotPrice', async function (req, res, next) {
+  try {
+    const {
+      PlotCategory,
+      PlotSize,
+      PriceDate,
+      PlotPrice,
+      TokenMoney,
+      ConfirmationAdvance,
+      MonthlyInstallment,
+      QuarterlyInstallment,
+      TotalInstallmentQuarterly,
+      TotalMonthlyInstallments,
+      Extra15Percent,
+    } = req.body;
+
+    const data = {
+      PlotCategory,
+      PlotSize,
+      PriceDate,
+      PlotPrice,
+      TokenMoney,
+      ConfirmationAdvance,
+      MonthlyInstallment,
+      QuarterlyInstallment,
+      TotalInstallmentQuarterly,
+      TotalMonthlyInstallments,
+      Extra15Percent,
+    };
+
+    console.log(data);
+
+    // Now you can use 'data' to create a new PlotPrice record in the database.
+    // For example, using Prisma:
+    const newPlotPrice = await prisma.plotPrice.create({
+      data: data,
+    });
+
+    console.log(newPlotPrice);
+    const serializednewPlotPrice = jsonSerializer.stringify(newPlotPrice);
+
+    res.status(200).json(serializednewPlotPrice);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 module.exports = router;

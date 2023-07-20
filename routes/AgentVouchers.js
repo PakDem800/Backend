@@ -30,5 +30,50 @@ router.get('/', async function (req, res, next) {
     next(error);
   }
 });
+//create agent payment voucher
+router.post('/createVoucher', async function (req, res, next) {
+  try {
+    const {
+      FileNo,
+      VoucherDate,
+      Agent,
+      Amount,
+      Description,
+      CommissionPercentage,
+      CommissionType,
+      BBF,
+      VoucherNo,
+    } = req.body;
+
+    const data = {
+      FileNo,
+      VoucherDate,
+      Agent,
+      Amount,
+      Description,
+      CommissionPercentage,
+      CommissionType,
+      BBF,
+      VoucherNo,
+    };
+
+    console.log(data);
+
+    // Now you can use 'data' to create a new VoucherTbl record in the database.
+    // For example, using Prisma:
+    const newVoucher = await prisma.voucherTbl.create({
+      data: data,
+    });
+
+    console.log(newVoucher);
+    const serializedNewVoucher = jsonSerializer.stringify(newVoucher);
+
+    res.status(200).json(serializedNewVoucher);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 module.exports = router;

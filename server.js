@@ -31,7 +31,8 @@ var PlotCancellationRouter = require('./routes/PlotCancellation')
 var PlotAllotmentRouter = require('./routes/PlotAllotment')
 var paymentScheduleRouter = require('./routes/PaymentSchedule')
 var receiptRouter = require('./routes/receipts')
-
+var monthlyReportRouter = require('./routes/MonthlyReport')
+var UserRouter =  require('./routes/Users')
 
 var app = express();
 
@@ -61,7 +62,6 @@ app.use('/ReceiptofFile' , ReceiptFinderRouter)
 app.use('/AgentWiseFile' , AgentWiseFileRouter)
 app.use('/agentCommission' , AgentCommssionRouter)
 app.use('/PlotListDetails' ,PlotListDetailsRouter)
-//is ka name ni yaad
 app.use('/MainFormFilter' , MainFormFilterRouter)
 app.use('/CAPayment' ,CAPaymentRouter)
 app.use('/CashPayment' ,CashPaymentRouter)
@@ -71,7 +71,8 @@ app.use('/PlotCancellationLetters' , PlotCancellationRouter)
 app.use('/PlotAllotment' , PlotAllotmentRouter)
 app.use('/PaymentSchedule' ,paymentScheduleRouter)
 app.use('/receipt',receiptRouter)
-
+app.use('/MonthlyReport' , monthlyReportRouter)
+app.use('/User', UserRouter)
 
 
 // catch 404 and forward to error handler

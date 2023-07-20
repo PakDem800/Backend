@@ -50,12 +50,12 @@ router.get('/transferReceipt', async function (req, res, next) {
   }
 });
 
-// regular receipt
+// Development receipt
 router.get('/DevelopmentReceipt', async function (req, res, next) {
   try {
 
 
-    // Prisma query to retrieve refund records with ReceivedAmount = 15000
+
     const allMainForm = await prisma.receiptTbl.findMany({
       where: {
         ReceiptType : 3
@@ -74,7 +74,7 @@ router.get('/DevelopmentReceipt', async function (req, res, next) {
 
 
 
-// developmnt charges
+
 router.get('/receipt', async function(req,res,next){
     try {
         const receipt = await prisma.receiptTbl.findMany();
@@ -86,6 +86,82 @@ router.get('/receipt', async function(req,res,next){
         res.status(500).send('Internal Server Error');
       }
 });
+
+//Create Receipt
+//receipt record finder
+router.post('/createReceipt', async function (req, res, next) {
+  try {
+    const {
+      ReceiptNo,
+      FileNo,
+      date,
+      ReceivedAmount,
+      ReceivedDifferenceAmount,
+      ReceivedFrom,
+      Amount_For_The_Month_Of,
+      AmountReceivedForPlot,
+      ModeOfPayment,
+      Receipt,
+      Phase,
+      Block,
+      Plot_No,
+      Prepaired_By,
+      Prepaired_by_Name,
+      Remarks,
+      Balancamount,
+      ReceiptCatgory,
+      ReceiptStatus,
+      NextDueDate,
+      AgentID,
+      AgentName,
+      CommAmount,
+      CommRemarks,
+      ReceiptType, 
+    } = req.body;
+
+    const data = {
+      ReceiptNo,
+      FileNo,
+      Date : new Date(date),
+      ReceivedAmount,
+      ReceivedDifferenceAmount,
+      ReceivedFrom,
+      Amount_For_The_Month_Of,
+      AmountReceivedForPlot,
+      ModeOfPayment,
+      Receipt,
+      Phase,
+      Block,
+      Plot_No,
+      Prepaired_By,
+      Prepaired_by_Name,
+      Remarks,
+      Balancamount,
+      ReceiptCatgory,
+      ReceiptStatus,
+      NextDueDate,
+      AgentID,
+      AgentName,
+      CommAmount,
+      CommRemarks,
+      ReceiptType, 
+    };
+
+    console.log(data);
+
+    const newReceipt = await prisma.receiptTbl.create({
+      data: data,
+    });
+    console.log(newReceipt);
+    const serializednewReceipt = jsonSerializer.stringify(newReceipt);
+
+    res.status(200).json(serializednewReceipt);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 
 module.exports = router;
