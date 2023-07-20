@@ -19,5 +19,42 @@ router.get('/', async function (req, res, next) {
     next(error);
   }
 });
+//create 
+router.post('/createPlotAllotment', async function (req, res, next) {
+  try {
+    const {
+      AllotmentDate,
+      AllotmentTime,
+      FileNo,
+      PlotID,
+      IsActive,
+    } = req.body;
+
+    const data = {
+      AllotmentDate,
+      AllotmentTime,
+      FileNo,
+      PlotID,
+      IsActive,
+    };
+
+    console.log(data);
+
+    // Now you can use 'data' to create a new PlotAllotmentTbl record in the database.
+    // For example, using Prisma:
+    const newPlotAllotment = await prisma.plotAllotmentTbl.create({
+      data: data,
+    });
+
+    console.log(newPlotAllotment);
+    const serializedNewPlotAllotment = jsonSerializer.stringify(newPlotAllotment);
+
+    res.status(200).json(serializedNewPlotAllotment);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 module.exports = router;

@@ -19,5 +19,40 @@ router.get('/', async function (req, res, next) {
     next(error);
   }
 });
+//create plot cancellation
+router.post('/createPlotCancellationLetter', async function (req, res, next) {
+  try {
+    const {
+      PlotID,
+      CancellationDate,
+      AmountNotPaid,
+      ReasonForCancellation,
+    } = req.body;
+
+    const data = {
+      PlotID,
+      CancellationDate,
+      AmountNotPaid,
+      ReasonForCancellation,
+    };
+
+    console.log(data);
+
+    // Now you can use 'data' to create a new PlotCancellationLetter record in the database.
+    // For example, using Prisma:
+    const newPlotCancellationLetter = await prisma.plotCancellationLetter.create({
+      data: data,
+    });
+
+    console.log(newPlotCancellationLetter);
+    const serializedNewPlotCancellationLetter = jsonSerializer.stringify(newPlotCancellationLetter);
+
+    res.status(200).json(serializedNewPlotCancellationLetter);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 module.exports = router;

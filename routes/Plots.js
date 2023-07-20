@@ -19,5 +19,71 @@ router.get('/', async function (req, res, next) {
     next(error);
   }
 });
+//create plots
+router.post('/createPlot', async function (req, res, next) {
+  try {
+    const {
+      ProjectID,
+      PlotPrice,
+      PlotNo,
+      Plots,
+      PlotSize,
+      Street,
+      Phase,
+      Block,
+      Category,
+      PlotLocation,
+      Amount,
+      PlotStatus,
+      sold,
+      TokenMoney,
+      CornfirmationAdvance,
+      MonthlyInstallment,
+      QuarterlyInstallment,
+      Extra15Percent,
+      TotalQuarterlyInstallment,
+      TotalMonthlyInstallment,
+    } = req.body;
+
+    const data = {
+      ProjectID,
+      PlotPrice,
+      PlotNo,
+      Plots,
+      PlotSize,
+      Street,
+      Phase,
+      Block,
+      Category,
+      PlotLocation,
+      Amount,
+      PlotStatus,
+      sold,
+      TokenMoney,
+      CornfirmationAdvance,
+      MonthlyInstallment,
+      QuarterlyInstallment,
+      Extra15Percent,
+      TotalQuarterlyInstallment,
+      TotalMonthlyInstallment,
+    };
+
+    console.log(data);
+
+   
+    const newPlot = await prisma.plotsTbl.create({
+      data: data,
+    });
+
+    console.log(newPlot);
+    const serializedNewPlot = jsonSerializer.stringify(newPlot);
+
+    res.status(200).json(serializedNewPlot);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 module.exports = router;
