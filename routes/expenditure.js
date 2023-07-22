@@ -9,10 +9,12 @@ const app = express();
 app.use(bodyParser.json());
 
 const prisma = new PrismaClient();
+var { ExpenditureAuthorization , protect } = require('../middleware/authMiddleware')
+
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // expenditure Report with date range filter
-router.get('/', async function (req, res, next) {
+router.get('/',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
     const startDate = '2022-04-19'; // User enters the start date in format 'YYYY-MM-DD' (e.g., '2023-05-02')
     const endDate = '2022-04-19'; // User enters the end date in format 'YYYY-MM-DD' (e.g., '2023-05-05')
@@ -63,7 +65,7 @@ router.get('/', async function (req, res, next) {
 
 
 //Create Expenditure
-router.post('/createExpenditure', async function (req, res, next) {
+router.post('/createExpenditure',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
     const {
       ExpenseMainHead,
@@ -120,7 +122,7 @@ router.post('/createExpenditure', async function (req, res, next) {
 
 
 //Get 1 expenditure record
-router.get('/details', async function (req, res, next) {
+router.get('/details',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
     
     const {ExpenditureID} = req.body
@@ -161,7 +163,7 @@ router.get('/details', async function (req, res, next) {
 
 
 //Update expenditure
-router.put('/update', async function (req, res, next) {
+router.put('/update',protect, async function (req, res, next) {
     try {
       const {
         ExpenseID,

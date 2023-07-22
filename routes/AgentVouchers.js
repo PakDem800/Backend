@@ -4,9 +4,12 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
+
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-router.get('/all', async function (req, res, next) {
+var { isAdmin,protect } = require('../middleware/authMiddleware')
+
+router.get('/all',protect,isAdmin, async function (req, res, next) {
   try {
     const agentVouchers = await prisma.$queryRaw`
       SELECT
@@ -33,7 +36,7 @@ router.get('/all', async function (req, res, next) {
   }
 });
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     const agentName = 'Iqbal Shah';
     // will be req.body later on; also, prisma is case sensitive 
@@ -60,7 +63,7 @@ router.get('/', async function (req, res, next) {
 });
 
 
-router.get('/details', async function (req, res, next) {
+router.get('/details',isAdmin, protect,async function (req, res, next) {
   try {
     const { VoucherID } = req.body;
 
@@ -84,7 +87,7 @@ router.get('/details', async function (req, res, next) {
 
 
 //create agent payment voucher
-router.post('/createVoucher', async function (req, res, next) {
+router.post('/createVoucher',protect, isAdmin,async function (req, res, next) {
   try {
     const {
       FileNo,
@@ -171,7 +174,7 @@ router.put('/update', async function (req, res, next) {
 });
 
 //Delete 
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete',protect, isAdmin,async function (req, res, next) {
   try {
 
     const  { VoucherID  } = req.body

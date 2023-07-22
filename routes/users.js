@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var generateToken = require('../utils/generateToken')
 
 const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
@@ -8,9 +9,11 @@ const prisma = new PrismaClient();
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
+var { isAdmin,protect } = require('../middleware/authMiddleware')
 
 
-router.post('/createUser',async function (req, res, next) {
+
+router.post('/createUser',protect,isAdmin,async function (req, res, next) {
   try {
     const { UserName, Password, RolesID, LoginDateTime, IPAdderss } = req.body;
 
@@ -36,7 +39,6 @@ router.post('/login', async function (req, res, next) {
   try {
     const { UserName, Password } = req.body;
 
-    // Find the user with the provided username in the database
     const user = await prisma.usersTbl.findFirst({
       where: {
         UserName,
@@ -54,7 +56,11 @@ router.post('/login', async function (req, res, next) {
     }
 
     // If user is found and password matches, return all user info
-    res.status(200).json(user);
+    res.status(200).json({
+      user : user,
+      token : generateToken(user.RolesID)
+    
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });

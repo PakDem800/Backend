@@ -4,9 +4,12 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
+
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-router.get('/', async function (req, res, next) {
+var { protect ,isAdmin } = require('../middleware/authMiddleware')
+
+router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     const agentsAndVouchers = await prisma.agentTbl.findMany({
       select: {

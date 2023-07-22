@@ -5,8 +5,9 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
+var { isAdmin,protect } = require('../middleware/authMiddleware')
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect, isAdmin,async function (req, res, next) {
   try {
     const allPlots = await prisma.plotsTbl.findMany();
     const jsonSerializer = JSONbig({ storeAsString: true });
@@ -22,7 +23,7 @@ router.get('/', async function (req, res, next) {
 });
 
 //View 1 plot
-router.get('/details', async function (req, res, next) {
+router.get('/details',protect,isAdmin, async function (req, res, next) {
   try {
 
     const { PlotID } = req.body
@@ -47,7 +48,7 @@ router.get('/details', async function (req, res, next) {
 
 
 //create plots
-router.post('/createPlot', async function (req, res, next) {
+router.post('/createPlot',protect,isAdmin, async function (req, res, next) {
   try {
     const {
       ProjectID,
@@ -113,7 +114,7 @@ router.post('/createPlot', async function (req, res, next) {
 });
 
 //Update plots
-router.put('/update', async function (req, res, next) {
+router.put('/update',protect,isAdmin, async function (req, res, next) {
   try {
 
     const  { 
@@ -180,7 +181,7 @@ router.put('/update', async function (req, res, next) {
 });
 
 
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete',protect,isAdmin, async function (req, res, next) {
   try {
 
     const  { PlotID  } = req.body

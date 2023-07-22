@@ -6,9 +6,10 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
+var { protect } = require('../middleware/authMiddleware')
 
 // regular receipt
-router.get('/regularReceipt', async function (req, res, next) {
+router.get('/regularReceipt',protect, async function (req, res, next) {
   try {
     const receiptType = 1;
     // Set the filter value to 15000
@@ -32,7 +33,7 @@ router.get('/regularReceipt', async function (req, res, next) {
 
 //transfer receipt
 // transfer receipt with ReceivedAmount filter
-router.get('/transferReceipt', async function (req, res, next) {
+router.get('/transferReceipt',protect, async function (req, res, next) {
   try {
     const receiptType = 2; 
     // Set the filter value to 15000
@@ -54,7 +55,7 @@ router.get('/transferReceipt', async function (req, res, next) {
 });
 
 // Development receipt
-router.get('/DevelopmentReceipt', async function (req, res, next) {
+router.get('/DevelopmentReceipt',protect, async function (req, res, next) {
   try {
 
     const allMainForm = await prisma.receiptTbl.findMany({
@@ -74,7 +75,7 @@ router.get('/DevelopmentReceipt', async function (req, res, next) {
 
 
 //Edit Receipt
-router.put('/update', async function (req, res, next) {
+router.put('/update', protect,async function (req, res, next) {
   try {
     const receiptId = req.body.receiptId; // Assuming the receiptId is passed as "Id" in the request body
     console.log(receiptId)
@@ -149,7 +150,7 @@ router.put('/update', async function (req, res, next) {
 
 
 //Delete Receipt
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete',protect, async function (req, res, next) {
   try {
     const { receiptId } = req.body;
 
@@ -185,7 +186,7 @@ router.delete('/delete', async function (req, res, next) {
 });
 
 //Get 1 receipt
-router.get('/details', async function (req, res, next) {
+router.get('/details',protect, async function (req, res, next) {
   try {
     const { receiptId } = req.body;
 
@@ -225,7 +226,7 @@ router.get('/details', async function (req, res, next) {
 
 
 //all receipts
-router.get('/receipt', async function(req,res,next){
+router.get('/receipt',protect, async function(req,res,next){
     try {
         const receipt = await prisma.receiptTbl.findMany();
         const serializedreceipt = jsonSerializer.stringify(receipt);
@@ -239,7 +240,7 @@ router.get('/receipt', async function(req,res,next){
 
 //Create Receipt
 //receipt record finder
-router.post('/createReceipt', async function (req, res, next) {
+router.post('/createReceipt',protect, async function (req, res, next) {
   try {
     const {
       ReceiptNo,
