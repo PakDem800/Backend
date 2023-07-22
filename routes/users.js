@@ -2,8 +2,11 @@ var express = require('express');
 var router = express.Router();
 
 const { PrismaClient } = require('@prisma/client');
+const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
+
+const jsonSerializer = JSONbig({ storeAsString: true });
 
 
 

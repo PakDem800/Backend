@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const { Prisma } = require('@prisma/client'); 
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
@@ -27,6 +28,8 @@ router.get('/regularReceipt', async function (req, res, next) {
     res.status(500).send('Internal Server Error');
   }
 });
+
+
 //transfer receipt
 // transfer receipt with ReceivedAmount filter
 router.get('/transferReceipt', async function (req, res, next) {
@@ -54,8 +57,6 @@ router.get('/transferReceipt', async function (req, res, next) {
 router.get('/DevelopmentReceipt', async function (req, res, next) {
   try {
 
-
-
     const allMainForm = await prisma.receiptTbl.findMany({
       where: {
         ReceiptType : 3
@@ -72,9 +73,158 @@ router.get('/DevelopmentReceipt', async function (req, res, next) {
 });
 
 
+//Edit Receipt
+router.put('/update', async function (req, res, next) {
+  try {
+    const receiptId = req.body.receiptId; // Assuming the receiptId is passed as "Id" in the request body
+    console.log(receiptId)
+    console.log(typeof(receiptId))
+    if (isNaN(receiptId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receiptId provided in the request body.',
+      });
+    }
+
+    const Id = parseInt(receiptId)
+
+    // Update the record with the new data from the request body
+    const updatedRecord = await prisma.receiptTbl.update({
+      where: {
+        Id: Id,
+      },
+      data: {
+        ReceiptNo: req.body.ReceiptNo,
+        FileNo: req.body.FileNo,
+        Date: new Date(req.body.date),
+        ReceivedAmount: req.body.ReceivedAmount,
+        ReceivedDifferenceAmount: req.body.ReceivedDifferenceAmount,
+        ReceivedFrom: req.body.ReceivedFrom,
+        Amount_For_The_Month_Of: req.body.Amount_For_The_Month_Of,
+        AmountReceivedForPlot: req.body.AmountReceivedForPlot,
+        ModeOfPayment: req.body.ModeOfPayment,
+        Receipt: req.body.Receipt,
+        Phase: req.body.Phase,
+        Block: req.body.Block,
+        Plot_No: req.body.Plot_No,
+        Prepaired_By: req.body.Prepaired_By,
+        Prepaired_by_Name: req.body.Prepaired_by_Name,
+        Remarks: req.body.Remarks,
+        Balancamount: req.body.Balancamount,
+        ReceiptCatgory: req.body.ReceiptCatgory,
+        ReceiptStatus: req.body.ReceiptStatus,
+        NextDueDate: new Date(req.body.NextDueDate),
+        AgentID: req.body.AgentID,
+        AgentName: req.body.AgentName,
+        CommAmount: req.body.CommAmount,
+        CommRemarks: req.body.CommRemarks,
+        ReceiptType: req.body.receiptType
+      },
+    });
+
+    const serializedupdatedRecord = jsonSerializer.stringify(updatedRecord);
+
+    res.status(200).json({
+      success: true,
+      message: `Receipt record with ID ${receiptId} has been updated successfully.`,
+      updatedRecord: serializedupdatedRecord,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+      // If the error is due to non-existent record, return 404 status
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt record to update does not exist.',
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+});
+
+
+//Delete Receipt
+router.delete('/delete', async function (req, res, next) {
+  try {
+    const { receiptId } = req.body;
+
+    if (!receiptId) {
+      return res.status(400).json({
+        success: false,
+        message: 'receiptId is required in the request body.',
+      });
+    }
+
+    const Id = parseInt(receiptId);
+
+    console.log(typeof(Id));
+
+    // Use Prisma client to delete the record
+    const deletedRecord = await prisma.receiptTbl.delete({
+      where: {
+        Id: Id,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Record with Id ${Id} has been deleted successfully.`
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+});
+
+//Get 1 receipt
+router.get('/details', async function (req, res, next) {
+  try {
+    const { receiptId } = req.body;
+
+    if (!receiptId) {
+      return res.status(400).json({
+        success: false,
+        message: 'receiptId is required in the request body.',
+      });
+    }
+
+    const Id = parseInt(receiptId);
+
+    console.log(typeof(Id));
+
+    // Use Prisma client to delete the record
+    const Record = await prisma.receiptTbl.findFirst({
+      where: {
+        Id: Id,
+      },
+    });
+
+    const serializedRecord = jsonSerializer.stringify(Record);
+
+    res.status(200).json({
+      success: true,
+      data: serializedRecord,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+});
 
 
 
+//all receipts
 router.get('/receipt', async function(req,res,next){
     try {
         const receipt = await prisma.receiptTbl.findMany();
@@ -139,7 +289,7 @@ router.post('/createReceipt', async function (req, res, next) {
       Balancamount,
       ReceiptCatgory,
       ReceiptStatus,
-      NextDueDate,
+      NextDueDate : new Date(NextDueDate),
       AgentID,
       AgentName,
       CommAmount,

@@ -5,6 +5,8 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 
+const jsonSerializer = JSONbig({ storeAsString: true });
+
 router.get('/', async function (req, res, next) {
   try {
     const allPricePlots = await prisma.plotPrice.findMany();
@@ -19,6 +21,30 @@ router.get('/', async function (req, res, next) {
     next(error);
   }
 });
+
+//Get 1 plot price
+router.get('/details', async function (req, res, next) {
+  try {
+
+    const  { PlotPriceID } = req.body
+
+    const allPricePlots = await prisma.plotPrice.findFirst({
+      where:{
+        PlotPriceID : parseInt(PlotPriceID),
+      }
+    });
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+    // Serialize the BigInt values using json-bigint
+    const serializedPricePlots = jsonSerializer.stringify(allPricePlots);
+
+    res.send(serializedPricePlots);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 
 // create plot price
 router.post('/createPlotPrice', async function (req, res, next) {
@@ -40,7 +66,7 @@ router.post('/createPlotPrice', async function (req, res, next) {
     const data = {
       PlotCategory,
       PlotSize,
-      PriceDate,
+      PriceDate : new Date(PriceDate),
       PlotPrice,
       TokenMoney,
       ConfirmationAdvance,
@@ -66,6 +92,75 @@ router.post('/createPlotPrice', async function (req, res, next) {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+//update
+router.put('/update', async function (req, res, next) {
+  try {
+
+    const  { 
+      PlotPriceID ,
+      PlotCategory,
+      PlotSize,
+      PriceDate,
+      PlotPrice,
+      TokenMoney,
+      ConfirmationAdvance,
+      MonthlyInstallment,
+      QuarterlyInstallment,
+      TotalInstallmentQuarterly,
+      TotalMonthlyInstallments,
+      Extra15Percent } = req.body
+
+    const allPricePlots = await prisma.plotPrice.update({
+      where:{
+        PlotPriceID : parseInt(PlotPriceID),
+      } ,
+      data : {
+        PlotCategory,
+        PlotSize,
+        PriceDate : new Date(PriceDate),
+        PlotPrice,
+        TokenMoney,
+        ConfirmationAdvance,
+        MonthlyInstallment,
+        QuarterlyInstallment,
+        TotalInstallmentQuarterly,
+        TotalMonthlyInstallments,
+        Extra15Percent
+      }
+    });
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+    // Serialize the BigInt values using json-bigint
+    const serializedPricePlots = jsonSerializer.stringify(allPricePlots);
+
+    res.send(serializedPricePlots);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+//Delete Plot Price
+router.delete('/delete', async function (req, res, next) {
+  try {
+
+    const  { PlotPriceID  } = req.body
+
+    const allPricePlots = await prisma.plotPrice.delete({
+      where:{
+        PlotPriceID : parseInt(PlotPriceID),
+      }
+    });
+    res.status(200).json({
+      success: true,
+      message: `Plot Price with PlotPriceID ${PlotPriceID} has been deleted successfully.`
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 

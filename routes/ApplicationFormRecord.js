@@ -5,6 +5,8 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 
+const jsonSerializer = JSONbig({ storeAsString: true });
+
 router.get('/', async function (req, res, next) {
   try {
     const fileNo = '455';
