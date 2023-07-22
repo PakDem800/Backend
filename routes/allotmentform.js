@@ -28,7 +28,7 @@ router.post('/CreatemainForm' ,async function (req, res, next) {
   try {
     
     const {
-      Date,
+      date,
       FileNo,
       FileType,
       Area,
@@ -90,7 +90,114 @@ router.post('/CreatemainForm' ,async function (req, res, next) {
     
     
     const data = {
-      Date ,
+      Date : new Date(date) ,
+      FileNo,
+      FileType,
+      Area,
+      PlotNo,
+      PlotID,
+      Phase,
+      Block,
+      Total_Installment,
+      PlotLocation,
+      ApplicantName,
+      FatherOrHusband,
+      CNICNo,
+      ContactNo,
+      PermanentAddress,
+      PostalAddress,
+      Nok,
+      NoKFatherName,
+      NokSRelation,
+      NoKAddress,
+      Refrence,
+      ModeOfPayment,
+      InvestorAmount,
+      InvestorDownPayment,
+      TotalAmount,
+      DownPayment,
+      MonthlyInstallment,
+      InvestorMonthlyInstallment,
+      CornerCharges,
+      GrandTotal,
+      AppRemarks,
+      RefMobileNo,
+      Agent,
+      CommissionPercentage,
+      NoteNo,
+      IsActive,
+      IsPlotCancel,
+      IsCurrentWith,
+      PlotCategory,
+      Discount,
+      PossesionStatus,
+      SubAgent,
+      SubAgentComm,
+      Investor,
+      Prepaired_By,
+      Prepaired_by_Name,
+      TransferAmount,
+      TransferDate : new Date(TransferDate),
+      DevelopmentChargesIncluded,
+      DevelopmentAmount,
+      DevelopmentChargesDate : new Date(DevelopmentChargesDate),
+      UpdatedBy,
+      RefundedStatus,
+      RefundDate : new Date(RefundDate),
+      DeductedAmount,
+      InstallmentsForRefund,
+      RefundAmount,
+      // Add other fields from req.body here
+    };
+    
+    // Now you can use 'data' to create a new MainAppForm record in the database.
+    // For example, using Prisma:
+    const newMainAppForm = await prisma.mainAppForm.create({
+      data: data,
+    });
+    console.log(newMainAppForm)
+    const serializedMainAppForm = jsonSerializer.stringify(newMainAppForm);
+
+    res.status(200).json(serializedMainAppForm);    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error);
+  }
+} )
+
+//Get detail of one form
+router.get('/mainform/details', async function (req, res, next) {
+  try {
+    const { ApplicationNo } = req.body;
+
+    // Find the mainAppForm with the provided ApplicationNo in the database
+    const mainAppForm = await prisma.mainAppForm.findFirst({
+      where: {
+        ApplicationNo,
+      },
+    });
+
+    // If form not found, return error
+    if (!mainAppForm) {
+      return res.status(404).json({ error: 'Form not found' });
+    }
+
+    const serializedMainAppForm = jsonSerializer.stringify(mainAppForm);
+
+    res.send(serializedMainAppForm);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.put('/mainform/update', async function (req, res, next) {
+  try {
+
+    // Get the form data from the request body
+    const {
+      ApplicationNo,
+      date,
       FileNo,
       FileType,
       Area,
@@ -148,22 +255,130 @@ router.post('/CreatemainForm' ,async function (req, res, next) {
       InstallmentsForRefund,
       RefundAmount,
       // Add other fields from req.body here
-    };
-    
-    // Now you can use 'data' to create a new MainAppForm record in the database.
-    // For example, using Prisma:
-    const newMainAppForm = await prisma.mainAppForm.create({
-      data: data,
-    });
-    console.log(newMainAppForm)
-    const serializedMainAppForm = jsonSerializer.stringify(newMainAppForm);
+    } = req.body;
 
-    res.status(200).json(serializedMainAppForm);    
+    // Prepare the updated data object
+    const updatedData = {
+      Date : new Date(date) ,
+      FileNo,
+      FileType,
+      Area,
+      PlotNo,
+      PlotID,
+      Phase,
+      Block,
+      Total_Installment,
+      PlotLocation,
+      ApplicantName,
+      FatherOrHusband,
+      CNICNo,
+      ContactNo,
+      PermanentAddress,
+      PostalAddress,
+      Nok,
+      NoKFatherName,
+      NokSRelation,
+      NoKAddress,
+      Refrence,
+      ModeOfPayment,
+      InvestorAmount,
+      InvestorDownPayment,
+      TotalAmount,
+      DownPayment,
+      MonthlyInstallment,
+      InvestorMonthlyInstallment,
+      CornerCharges,
+      GrandTotal,
+      AppRemarks,
+      RefMobileNo,
+      Agent,
+      CommissionPercentage,
+      NoteNo,
+      IsActive,
+      IsPlotCancel,
+      IsCurrentWith,
+      PlotCategory,
+      Discount,
+      PossesionStatus,
+      SubAgent,
+      SubAgentComm,
+      Investor,
+      Prepaired_By,
+      Prepaired_by_Name,
+      TransferAmount,
+      TransferDate : new Date(TransferDate),
+      DevelopmentChargesIncluded,
+      DevelopmentAmount,
+      DevelopmentChargesDate : new Date(DevelopmentChargesDate),
+      UpdatedBy,
+      RefundedStatus,
+      RefundDate : new Date(RefundDate),
+      DeductedAmount,
+      InstallmentsForRefund,
+      RefundAmount,
+      // Add other fields from req.body here
+    };
+
+    // Update the mainAppForm in the database with the new data
+    const updatedForm = await prisma.mainAppForm.update({
+      where: {
+        ApplicationNo,
+      },
+      data: updatedData,
+    });
+
+    const serializedUpdatedForm = jsonSerializer.stringify(updatedForm);
+
+    res.send(serializedUpdatedForm);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-} )
+});
+
+//Delete
+router.delete('/mainform/delete', async function (req, res, next) {
+  try {
+    const { applicationNo } = req.body;
+
+    if (!applicationNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'ApplicationNo is required in the request body.',
+      });
+    }
+
+    const ApplicationNo = parseInt(applicationNo);
+
+    console.log(typeof(ApplicationNo));
+
+    // Use Prisma client to delete the record
+    const deletedRecord = await prisma.mainAppForm.delete({
+      where: {
+        ApplicationNo: ApplicationNo,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Record with ApplicationNo ${applicationNo} has been deleted successfully.`
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+});
+
+
+
+
+
+
+
+/*                               Refund Router                              */
 
 //refund schedule
 router.get('/refundSchedule', async function(req,res,next){
@@ -177,6 +392,8 @@ router.get('/refundSchedule', async function(req,res,next){
         res.status(500).send('Internal Server Error');
       }
 });
+
+
 
 //create refund
 router.post('/createRefund', async function (req, res, next) {
@@ -230,6 +447,8 @@ router.get('/receipt', async function(req,res,next){
         res.status(500).send('Internal Server Error');
       }
 });
+
+
 
 
 module.exports = router;
