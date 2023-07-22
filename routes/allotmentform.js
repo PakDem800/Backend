@@ -6,12 +6,16 @@ const JSONbig = require('json-bigint');
 const app = express();
 
 const prisma = new PrismaClient();
+
 const jsonSerializer = JSONbig({ storeAsString: true });
+
+var { protect } = require('../middleware/authMiddleware')
+
 // Parse JSON data sent in the request body
 app.use(bodyParser.json());
 
 // main form
-router.get('/mainform', async function (req, res, next) {
+router.get('/mainform',protect, async function (req, res, next) {
   try {
     const allMainForm = await prisma.mainAppForm.findMany();
     const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
@@ -24,7 +28,7 @@ router.get('/mainform', async function (req, res, next) {
 });
 
 //Main form Creation
-router.post('/CreatemainForm' ,async function (req, res, next) {
+router.post('/CreatemainForm' ,protect,async function (req, res, next) {
   try {
     
     const {
@@ -166,7 +170,7 @@ router.post('/CreatemainForm' ,async function (req, res, next) {
 } )
 
 //Get detail of one form
-router.get('/mainform/details', async function (req, res, next) {
+router.get('/mainform/details',protect, async function (req, res, next) {
   try {
     const { ApplicationNo } = req.body;
 
@@ -191,7 +195,7 @@ router.get('/mainform/details', async function (req, res, next) {
   }
 });
 
-router.put('/mainform/update', async function (req, res, next) {
+router.put('/mainform/update',protect,async function (req, res, next) {
   try {
 
     // Get the form data from the request body
@@ -337,7 +341,7 @@ router.put('/mainform/update', async function (req, res, next) {
 });
 
 //Delete
-router.delete('/mainform/delete', async function (req, res, next) {
+router.delete('/mainform/delete',protect, async function (req, res, next) {
   try {
     const { applicationNo } = req.body;
 
@@ -381,7 +385,7 @@ router.delete('/mainform/delete', async function (req, res, next) {
 /*                               Refund Router                              */
 
 //refund schedule
-router.get('/refundSchedule', async function(req,res,next){
+router.get('/refundSchedule',protect, async function(req,res,next){
     try {
         const allMainForm = await prisma.refundTbl.findMany();
         const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
@@ -396,7 +400,7 @@ router.get('/refundSchedule', async function(req,res,next){
 
 
 //create refund
-router.post('/createRefund', async function (req, res, next) {
+router.post('/createRefund',protect, async function (req, res, next) {
   try {
     const {
       ApplicationNo,
@@ -436,7 +440,7 @@ router.post('/createRefund', async function (req, res, next) {
 
 
 //files developmnt charges
-router.get('/receipt', async function(req,res,next){
+router.get('/receipt',protect, async function(req,res,next){
     try {
         const receipt = await prisma.receiptTbl.findMany();
         const serializedreceipt = jsonSerializer.stringify(receipt);

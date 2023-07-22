@@ -5,18 +5,11 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
+var {isAdmin,protect } = require('../middleware/authMiddleware')
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect, isAdmin,async function (req, res, next) {
   try {
-   // const { plotSize, plotBlock, applicantName, agent } = req.body;
-    const applicantName = null
-    const agent = null
-    const plotSize = '25x50'
-    const plotBlock = 'B'
-    
-    //req.body will be used
-    
-    
+    const { plotSize, plotBlock, applicantName, agent } = req.body;
         
         const mainForms = await prisma.MainAppForm.findMany({
           where: {

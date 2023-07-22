@@ -4,10 +4,13 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
+
+var {isAdmin, protect } = require('../middleware/authMiddleware')
+
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // vouchers
-router.get('/vouchers', async function (req, res, next) {
+router.get('/vouchers',protect,isAdmin, async function (req, res, next) {
   try {
     const allvouchers = await prisma.voucherTbl.findMany();
     const serializedallvouchers = jsonSerializer.stringify(allvouchers);
@@ -20,7 +23,7 @@ router.get('/vouchers', async function (req, res, next) {
 });
 
 //Create Vouchers
-router.post('/createVoucher', async function (req, res, next) {
+router.post('/createVoucher',protect, isAdmin,async function (req, res, next) {
   try {
     const {
       FileNo,
@@ -64,7 +67,7 @@ router.post('/createVoucher', async function (req, res, next) {
 });
 
 // 1 vouchers
-router.get('/voucher/details', async function (req, res, next) {
+router.get('/voucher/details', protect,isAdmin, async function (req, res, next) {
   try {
 
     const {Id} = req.body
@@ -88,7 +91,7 @@ router.get('/voucher/details', async function (req, res, next) {
 });
 
 //Update voucher
-router.put('/voucher/update', async function (req, res, next) {
+router.put('/voucher/update',protect,isAdmin, async function (req, res, next) {
   try {
     const {
       VoucherID,
@@ -137,7 +140,7 @@ router.put('/voucher/update', async function (req, res, next) {
 });
 
 //Delete
-router.delete('/voucher/delete', async function (req, res, next) {
+router.delete('/voucher/delete',protect,isAdmin, async function (req, res, next) {
   try {
     const { VoucherID } = req.body;
 

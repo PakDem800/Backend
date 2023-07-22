@@ -4,8 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
+var { protect } = require('../middleware/authMiddleware')
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect, async function (req, res, next) {
   try {
     const fileNo = '455';
     //come in req.body

@@ -4,10 +4,11 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
+var { protect } = require('../middleware/authMiddleware')
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // Ledger Report
-router.get('/LedgerReport', async function (req, res, next) {
+router.get('/LedgerReport',protect, async function (req, res, next) {
     try {
         const allreceipt = await prisma.receiptTbl.findMany();
         const serializedallreceipt = jsonSerializer.stringify(allreceipt);

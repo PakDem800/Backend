@@ -6,8 +6,9 @@ const JSONbig = require('json-bigint');
 const prisma = new PrismaClient();
 
 const jsonSerializer = JSONbig({ storeAsString: true });
+var { protect } = require('../middleware/authMiddleware')
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect, async function (req, res, next) {
   try {
     //will be from user
     const startDate = '2021-05-02';

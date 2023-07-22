@@ -5,8 +5,9 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
+var {isAdmin, protect } = require('../middleware/authMiddleware')
 
-router.get('/', async function (req, res, next) {
+router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     const allregistrations = await prisma.registrationTbl.findMany();
     const jsonSerializer = JSONbig({ storeAsString: true });
@@ -22,7 +23,7 @@ router.get('/', async function (req, res, next) {
 });
 
 //Get 1 Registered Investor
-router.get('/details', async function (req, res, next) {
+router.get('/details', protect,isAdmin,async function (req, res, next) {
   try {
 
     const { RegisterationID  } =  req.body
@@ -46,7 +47,7 @@ router.get('/details', async function (req, res, next) {
 });
 
 //create
-router.post('/createRegistration', async function (req, res, next) {
+router.post('/createRegistration', protect,isAdmin,async function (req, res, next) {
   try {
     const {
       RegistrationDate,
@@ -95,7 +96,7 @@ router.post('/createRegistration', async function (req, res, next) {
 });
 
 
-router.put('/updateRegistration', async function (req, res, next) {
+router.put('/updateRegistration', protect , isAdmin, async function (req, res, next) {
   try {
     const {
       RegisterationID,
@@ -149,7 +150,7 @@ router.put('/updateRegistration', async function (req, res, next) {
 });
 
 //Delete 
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete', protect,isAdmin, async function (req, res, next) {
   try {
 
     const  { RegisterationID  } = req.body

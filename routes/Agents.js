@@ -5,10 +5,12 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 
+var { isAdmin,protect } = require('../middleware/authMiddleware')
+
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 //All agents
-router.get('/', async function (req, res, next) {
+router.get('/', protect ,isAdmin,async function (req, res, next) {
   try {
     const allAgents = await prisma.agentTbl.findMany();
     const jsonSerializer = JSONbig({ storeAsString: true });
@@ -24,7 +26,7 @@ router.get('/', async function (req, res, next) {
 });
 
 //Get 1 agent
-router.get('/details', async function (req, res, next) {
+router.get('/details',protect,isAdmin, async function (req, res, next) {
   try {
 
     const { AgentID } =  req.body
@@ -51,7 +53,7 @@ router.get('/details', async function (req, res, next) {
 
 
 //create agents
-router.post('/createAgent', async function (req, res, next) {
+router.post('/createAgent',protect,isAdmin, async function (req, res, next) {
   try {
     const {
       RegistrationDate,
@@ -106,7 +108,7 @@ router.post('/createAgent', async function (req, res, next) {
 });
 
 //Update Agent
-router.put('/updateAgent', async function (req, res, next) {
+router.put('/updateAgent',protect,isAdmin, async function (req, res, next) {
   try {
     const {
       AgentID ,
@@ -165,7 +167,7 @@ router.put('/updateAgent', async function (req, res, next) {
 });
 
 //delete
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete', protect,isAdmin,async function (req, res, next) {
   try {
 
     const { AgentID } =  req.body

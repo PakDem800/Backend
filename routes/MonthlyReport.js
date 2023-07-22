@@ -7,12 +7,12 @@ const bodyParser = require('body-parser');
 const app = express();
 
 app.use(bodyParser.json());
-
+var { protect } = require('../middleware/authMiddleware')
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // Month wise Report
-router.get('/', async function (req, res, next) {
+router.get('/', protect,async function (req, res, next) {
   try {
    // const { startDate, endDate } = req.body;
     const startDate= "2023-05-17";
