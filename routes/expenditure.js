@@ -9,15 +9,14 @@ const app = express();
 app.use(bodyParser.json());
 
 const prisma = new PrismaClient();
-var { ExpenditureAuthorization , protect } = require('../middleware/authMiddleware')
+var { isAdmin ,ExpenditureAuthorization , protect } = require('../middleware/authMiddleware')
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // expenditure Report with date range filter
 router.get('/',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
-    const startDate = '2022-04-19'; // User enters the start date in format 'YYYY-MM-DD' (e.g., '2023-05-02')
-    const endDate = '2022-04-19'; // User enters the end date in format 'YYYY-MM-DD' (e.g., '2023-05-05')
+    const {startDate , endDate} = req.body
 
     if (!startDate || !endDate) {
       return res.status(400).send('Both start date and end date are required.');
@@ -163,7 +162,7 @@ router.get('/details',protect,ExpenditureAuthorization, async function (req, res
 
 
 //Update expenditure
-router.put('/update',protect, async function (req, res, next) {
+router.put('/update',protect,isAdmin , async function (req, res, next) {
     try {
       const {
         ExpenseID,

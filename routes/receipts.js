@@ -6,13 +6,11 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
-var { protect } = require('../middleware/authMiddleware')
+var { protect ,isAdmin } = require('../middleware/authMiddleware')
 
 // regular receipt
 router.get('/regularReceipt',protect, async function (req, res, next) {
   try {
-    const receiptType = 1;
-    // Set the filter value to 15000
 
     // Prisma query to retrieve refund records with ReceivedAmount = 15000
     const allMainForm = await prisma.receiptTbl.findMany({
@@ -35,13 +33,11 @@ router.get('/regularReceipt',protect, async function (req, res, next) {
 // transfer receipt with ReceivedAmount filter
 router.get('/transferReceipt',protect, async function (req, res, next) {
   try {
-    const receiptType = 2; 
-    // Set the filter value to 15000
 
     // Prisma query to retrieve refund records with ReceivedAmount = 15000
     const allMainForm = await prisma.receiptTbl.findMany({
       where: {
-        ReceiptType: receiptType,
+        ReceiptType: 2,
       },
     });
 
@@ -75,11 +71,10 @@ router.get('/DevelopmentReceipt',protect, async function (req, res, next) {
 
 
 //Edit Receipt
-router.put('/update', protect,async function (req, res, next) {
+router.put('/update', protect,isAdmin, async function (req, res, next) {
   try {
-    const receiptId = req.body.receiptId; // Assuming the receiptId is passed as "Id" in the request body
-    console.log(receiptId)
-    console.log(typeof(receiptId))
+    const receiptId = req.body.receiptId; 
+
     if (isNaN(receiptId)) {
       return res.status(400).json({
         success: false,
@@ -89,7 +84,6 @@ router.put('/update', protect,async function (req, res, next) {
 
     const Id = parseInt(receiptId)
 
-    // Update the record with the new data from the request body
     const updatedRecord = await prisma.receiptTbl.update({
       where: {
         Id: Id,
@@ -150,7 +144,7 @@ router.put('/update', protect,async function (req, res, next) {
 
 
 //Delete Receipt
-router.delete('/delete',protect, async function (req, res, next) {
+router.delete('/delete',protect,isAdmin, async function (req, res, next) {
   try {
     const { receiptId } = req.body;
 
@@ -163,9 +157,6 @@ router.delete('/delete',protect, async function (req, res, next) {
 
     const Id = parseInt(receiptId);
 
-    console.log(typeof(Id));
-
-    // Use Prisma client to delete the record
     const deletedRecord = await prisma.receiptTbl.delete({
       where: {
         Id: Id,

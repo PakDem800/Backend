@@ -7,16 +7,16 @@ const bodyParser = require('body-parser');
 const app = express();
 
 app.use(bodyParser.json());
-var { protect } = require('../middleware/authMiddleware')
+var { ExpenditureAuthorization, protect } = require('../middleware/authMiddleware')
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // Month wise Report
-router.get('/', protect,async function (req, res, next) {
+router.get('/', protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
-   // const { startDate, endDate } = req.body;
-    const startDate= "2023-05-17";
-    const endDate = "2023-05-20"
+
+    const { startDate, endDate } = req.body;
+
 
     if (!startDate || !endDate) {
       return res.status(400).send('Both start date and end date are required.');
@@ -30,14 +30,14 @@ router.get('/', protect,async function (req, res, next) {
     const monthWiseReportQuery = await prisma.$queryRaw`
     SELECT [Date], [Total_Received_Amount], [Office_Expence], [Net_Amount]
     FROM [pakdempk].[dbo].[MonthWiseReport]
-    WHERE [Date] >= ${startDate} AND [Date] <= ${endDate};
+    WHERE [Date] >= ${startDateObj} AND [Date] <= ${endDateObj};
     `;
 
     //mode of Payment sum data
     const totalReceivedAmountQuery = await prisma.$queryRaw`
     SELECT [ModeOfPayment], SUM([ReceivedAmount]) AS TotalReceivedAmount
     FROM [pakdempk].[dbo].[ReceiptTbl]
-    WHERE [Date] >= ${startDate} AND [Date] <= ${endDate}
+    WHERE [Date] >= ${startDateObj} AND [Date] <= ${endDateObj}
     GROUP BY [ModeOfPayment];
     `;
 
@@ -47,26 +47,24 @@ router.get('/', protect,async function (req, res, next) {
     FROM [pakdempk].[dbo].[ExpenditureTbl] AS ET
     JOIN [pakdempk].[dbo].[ExpenseHeadsTbls] AS EH ON ET.[ExpenseID] = EH.[ExpenseID]
     WHERE EH.[ExpenseSubHead] = 'Administration Expenditures'
-        AND ET.[ExpDate] >= ${startDate} AND ET.[ExpDate] <= ${endDate};
+        AND ET.[ExpDate] >= ${startDateObj} AND ET.[ExpDate] <= ${endDateObj};
     `;
 
     const CostOfLand = await prisma.$queryRaw`
     SELECT SUM(ET.[Amount]) AS TotalCostOfLand
     FROM [pakdempk].[dbo].[ExpenditureTbl] AS ET
     JOIN [pakdempk].[dbo].[ExpenseHeadsTbls] AS EH ON ET.[ExpenseID] = EH.[ExpenseID]
-    WHERE EH.[ExpenseNature] = 'Cost of Land' AND ET.ExpDate >= ${startDate} AND ET.ExpDate <= ${endDate};
+    WHERE EH.[ExpenseNature] = 'Cost of Land' AND ET.ExpDate >= ${startDateObj} AND ET.ExpDate <= ${endDateObj};
     `;
 
     const SiteDevelopmentCost = await prisma.$queryRaw`
     SELECT SUM(ET.[Amount]) AS SiteDevelopmentCost
     FROM [pakdempk].[dbo].[ExpenditureTbl] AS ET
     JOIN [pakdempk].[dbo].[ExpenseHeadsTbls] AS EH ON ET.[ExpenseID] = EH.[ExpenseID]
-    WHERE EH.[ExpenseNature] = 'Development Expense' AND ET.ExpDate >= ${startDate} AND ET.ExpDate <= ${endDate};
+    WHERE EH.[ExpenseNature] = 'Development Expense' AND ET.ExpDate >= ${startDateObj} AND ET.ExpDate <= ${endDateObj};
     `;
 
     const result = {
-
-    //Checking null for each
 
     monthWiseReport: monthWiseReportQuery
                         ? monthWiseReportQuery : 0,

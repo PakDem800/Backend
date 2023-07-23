@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-var { protect } = require('../middleware/authMiddleware')
+var { isAdmin , protect } = require('../middleware/authMiddleware')
 
 // Parse JSON data sent in the request body
 app.use(bodyParser.json());
@@ -195,7 +195,7 @@ router.get('/mainform/details',protect, async function (req, res, next) {
   }
 });
 
-router.put('/mainform/update',protect,async function (req, res, next) {
+router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
   try {
 
     // Get the form data from the request body
@@ -341,7 +341,7 @@ router.put('/mainform/update',protect,async function (req, res, next) {
 });
 
 //Delete
-router.delete('/mainform/delete',protect, async function (req, res, next) {
+router.delete('/mainform/delete',protect,isAdmin , async function (req, res, next) {
   try {
     const { applicationNo } = req.body;
 

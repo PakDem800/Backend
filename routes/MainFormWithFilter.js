@@ -9,22 +9,13 @@ const jsonSerializer = JSONbig({ storeAsString: true });
 var { protect } = require('../middleware/authMiddleware')
 router.get('/', protect,async function (req, res, next) {
   try {
-   // const { PlotNo, FileNo, ApplicantName, CNICNo } = req.body;
-    const applicantName = null
-    const CNICNo = null
-    const PlotNo = null
-    const FileNo = null
-    
+   const { PlotNo, FileNo, ApplicantName, CNICNo } = req.body;
 
-    //req.body will be used
-    
-    
-        
         const mainForms = await prisma.MainAppForm.findMany({
           where: {
             ...(CNICNo ? { CNICNo: CNICNo } : {}),
             ...(FileNo ? { FileNo: FileNo } : {}),
-            ...(applicantName ? { ApplicantName: applicantName } : {}),
+            ...(ApplicantName ? { ApplicantName: ApplicantName } : {}),
             ...(PlotNo ? { PlotNo: PlotNo } : {}),
           },
           select: {

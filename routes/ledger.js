@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
-var { protect } = require('../middleware/authMiddleware')
+var { isAdmin , protect } = require('../middleware/authMiddleware')
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // Ledger Report

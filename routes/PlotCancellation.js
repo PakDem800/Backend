@@ -60,8 +60,6 @@ router.post('/create',protect,isAdmin, async function (req, res, next) {
 
     console.log(data);
 
-    // Now you can use 'data' to create a new PlotCancellationLetter record in the database.
-    // For example, using Prisma:
     const newPlotCancellationLetter = await prisma.plotCancellationLetter.create({
       data: data,
     });
