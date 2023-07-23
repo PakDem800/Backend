@@ -38,7 +38,7 @@ router.get('/all',protect,isAdmin, async function (req, res, next) {
 
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
-    const agentName = 'Iqbal Shah';
+    const {agentName} = req.body;
     // will be req.body later on; also, prisma is case sensitive 
 
     const agentVouchers = await prisma.agentTbl.findFirst({

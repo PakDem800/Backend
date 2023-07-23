@@ -8,8 +8,7 @@ var { protect } = require('../middleware/authMiddleware')
 
 router.get('/',protect, async function (req, res, next) {
   try {
-    const fileNo = '455';
-    //come in req.body
+    const {fileNo} = req.body
 
     const receipts = await prisma.receiptTbl.findMany({
       where: {

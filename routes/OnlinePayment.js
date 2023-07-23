@@ -10,9 +10,8 @@ var { protect } = require('../middleware/authMiddleware')
 
 router.get('/',protect, async function (req, res, next) {
   try {
-    //will be from user
-    const startDate = '2021-05-02';
-    const endDate = '2021-06-30';
+
+    const {startDate , endDate} = req.body
     const modeOfPayment = 'Online';
 
     const mainForms = await prisma.mainAppForm.findMany({

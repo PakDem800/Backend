@@ -7,13 +7,12 @@ const prisma = new PrismaClient();
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-var { protect } = require('../middleware/authMiddleware')
+var { isAdmin ,protect } = require('../middleware/authMiddleware')
 
 router.get('/', protect,async function (req, res, next) {
   try {
-    const fileNo = '455';
-    //will be req.body
-
+    const {fileNo} = req.body;
+    
 
     const result = await prisma.$queryRaw`
     SELECT

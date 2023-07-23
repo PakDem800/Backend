@@ -12,8 +12,8 @@ const jsonSerializer = JSONbig({ storeAsString: true });
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     //will be from user
-    const startDate = '2021-05-02';
-    const endDate = '2021-05-03';
+    const {startDate ,endDate} = req.body;
+
 
     const mainForms = await prisma.mainAppForm.findMany({
       where: {

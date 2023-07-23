@@ -10,8 +10,6 @@ var { isAdmin,protect } = require('../middleware/authMiddleware')
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     const {userEnteredFileNo} = req.body; 
-    // File No will be from req.body
-
    
     const paymentSchedule = await prisma.paymentSchedule.findFirst({
       where: {

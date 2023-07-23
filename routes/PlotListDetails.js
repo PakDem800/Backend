@@ -33,10 +33,6 @@ router.get('/',protect, isAdmin,async function (req, res, next) {
           },
         });
   
-        
-      
-  
-
     const jsonSerializer = JSONbig({ storeAsString: true });
     const serializedMainForms = jsonSerializer.stringify(mainForms);
     res.send(serializedMainForms);
