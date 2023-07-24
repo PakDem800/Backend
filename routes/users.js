@@ -45,27 +45,27 @@ router.post('/login', async function (req, res, next) {
       },
     });
 
-    // If user not found, return error
+    // If user not found, return error for incorrect username
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(401).json({ message: 'Incorrect username' });
     }
 
     // Compare the provided password with the password in the database
     if (user.Password !== Password) {
-      return res.status(401).json({ error: 'Incorrect password' });
+      return res.status(401).json({ message: 'Incorrect password' });
     }
 
-    // If user is found and password matches, return all user info
-    res.status(200).json({
-      user : user,
-      token : generateToken(user.RolesID)
-    
+    // If user is found and password matches, return success response
+    return res.status(200).json({
+      user: user,
+      token: generateToken(user.RolesID),
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 
