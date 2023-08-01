@@ -17,8 +17,26 @@ app.use(bodyParser.json());
 // main form
 router.get('/mainform',protect, async function (req, res, next) {
   try {
-    const allMainForm = await prisma.mainAppForm.findMany();
-    const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
+    const allMainForm = await prisma.mainAppForm.findMany({
+      select : {
+        ApplicationNo : true,
+        Date:true,
+        FileNo : true,
+        Area : true,
+        PlotNo : true,
+        ApplicantName : true,
+        ContactNo : true,
+        TotalAmount : true,
+        DownPayment : true
+        
+      }
+    });
+
+    const MainAppForm = allMainForm.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
 
     res.send(serializedMainAppForm);
   } catch (error) {
@@ -170,14 +188,14 @@ router.post('/CreatemainForm' ,protect,async function (req, res, next) {
 } )
 
 //Get detail of one form
-router.get('/mainform/details',protect, async function (req, res, next) {
+router.get('/mainform/details', protect, async function (req, res, next) {
   try {
-    const { ApplicationNo } = req.body;
+    const { ApplicationNo } = req.query;
 
     // Find the mainAppForm with the provided ApplicationNo in the database
     const mainAppForm = await prisma.mainAppForm.findFirst({
       where: {
-        ApplicationNo,
+        ApplicationNo: parseInt(ApplicationNo),
       },
     });
 
@@ -186,14 +204,65 @@ router.get('/mainform/details',protect, async function (req, res, next) {
       return res.status(404).json({ error: 'Form not found' });
     }
 
-    const serializedMainAppForm = jsonSerializer.stringify(mainAppForm);
+    // Get the FileNo from the mainAppForm
+    const fileNo = mainAppForm.FileNo;
 
-    res.send(serializedMainAppForm);
+    // Find the latest date for the FileNo in the ReceiptTbl
+    const latestReceiptDate = await prisma.receiptTbl.findFirst({
+      where: {
+        FileNo: fileNo,
+      },
+      orderBy: {
+        Date: 'desc', // Get the latest date
+      },
+    });
+
+    mainAppForm.Date = mainAppForm.Date.toISOString().split('T')[0]
+    
+    // Calculate the difference in months between the latest receipt date and today's date
+    const today = new Date();
+    const latestDate = latestReceiptDate ? new Date(latestReceiptDate.Date) : null;
+
+    let statusData = {};
+
+    if (!latestDate) {
+      statusData = { status: 'active' };
+    } else {
+      const monthDifference = (today.getFullYear() - latestDate.getFullYear()) * 12 +
+        (today.getMonth() - latestDate.getMonth());
+
+      let status;
+      let reason = '';
+
+      if (monthDifference < 3) {
+        status = 'active';
+        reason = `installment pending from ${monthDifference} months`;
+      } else if (monthDifference < 6) {
+        status = 'inactive';
+        reason = `Due to installment pending from ${monthDifference} months`;
+      } else {
+        status = 'cancelled';
+        reason = `Due to installment pending from ${monthDifference} months`;
+      }
+
+      statusData = { status, reason };
+    }
+
+    // Combine status and reason inside mainAppForm object
+    const responseData = { ...mainAppForm, ...statusData };
+
+    // Convert the response data to a JSON string
+    const serializedResponseData = jsonSerializer.stringify(responseData);
+    console.log(serializedResponseData)
+    // Send the combined data as the response
+    res.send(serializedResponseData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
 
 router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
   try {
