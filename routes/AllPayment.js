@@ -5,11 +5,11 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 
-var { isAdmin,protect } = require('../middleware/authMiddleware')
+var { isAdmin,protect , ExpenditureAuthorization } = require('../middleware/authMiddleware')
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-router.get('/',protect,isAdmin, async function (req, res, next) {
+router.get('/',protect, async function (req, res, next) {
   try {
     //will be from user
     const {startDate ,endDate} = req.body;

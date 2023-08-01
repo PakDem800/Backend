@@ -9,55 +9,65 @@ var { protect } = require('../middleware/authMiddleware')
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-router.get('/',protect, async function (req, res, next) {
+router.get('/', protect, async function (req, res, next) {
   try {
-    //will be from user
-    const {startDate , endDate} = req.body ;
-    const modeOfPayment = 'CA';
+    const { startDate, endDate } = req.query; // Use req.query to access the query parameters
 
-    const mainForms = await prisma.mainAppForm.findMany({
-      where: {
-        ModeOfPayment: modeOfPayment,
-        Date: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
-      },
-      select: {
-        ApplicationNo: true,
-        ApplicantName: true,
-        FileNo: true,
-      },
-    });
+    if (startDate && endDate) {
+      const sdate = new Date(startDate);
+      const edate = new Date(endDate);
 
-    const receipts = await prisma.receiptTbl.findMany({
-      where: {
-        ModeOfPayment: modeOfPayment,
-        Date: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
-      },
-      select: {
-        Id: true,
-        ReceiptNo: true,
-        FileNo: true,
-        Date: true,
-        ReceivedAmount: true,
-        ModeOfPayment: true,
-        Plot_No: true,
-        AgentName: true,
-      },
-    });
+      var payments = await prisma.$queryRaw`
+        SELECT 
+          rt."Id" ,
+          mf."ApplicationNo",
+          mf."Date",
+          mf."FileNo",  
+          mf."ApplicantName",
+          rt."ModeOfPayment",
+          rt."ReceivedAmount",
+          mf."PlotNo",
+          ag."AgentName"
+          FROM "MainAppForm" AS mf
+          JOIN "AgentTbl" AS ag
+          ON mf."Agent" = ag."AgentID"
+          JOIN "ReceiptTbl" AS rt
+          ON mf."FileNo" = rt."FileNo"
+          WHERE rt."ModeOfPayment" = 'CA'
+          AND (rt."Date" BETWEEN ${sdate} AND ${edate})
+      `;
+      
 
-    const jointData = {
-      mainForms,
-      receipts,
-    };
+    } else {
+      var payments = await prisma.$queryRaw`
+        SELECT 
+          rt."Id" ,
+          mf."ApplicationNo",
+          mf."Date",
+          mf."FileNo",  
+          mf."ApplicantName",
+          rt."ModeOfPayment",
+          rt."ReceivedAmount",
+          mf."PlotNo",
+          ag."AgentName"
+        FROM "MainAppForm" AS mf
+        JOIN "AgentTbl" AS ag
+        ON mf."Agent" = ag."AgentID"
+        JOIN "ReceiptTbl" AS rt
+        ON mf."FileNo" = rt."FileNo"
+        WHERE rt."ModeOfPayment" = 'CA'
+      `;
+      
+      
+    }
+    const CApayments = payments.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
 
     const jsonSerializer = JSONbig({ storeAsString: true });
-    const serializedJointData = jsonSerializer.stringify(jointData);
-    res.send(serializedJointData);
+    const serializedPayments = jsonSerializer.stringify(CApayments);
+    res.send(serializedPayments);
   } catch (error) {
     console.error(error);
     next(error);
