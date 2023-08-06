@@ -10,11 +10,37 @@ var { isAdmin, protect } = require('../middleware/authMiddleware')
 
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
-    const allPlots = await prisma.plotAllotmentTbl.findMany();
+    const allPlots = await prisma.plotAllotmentTbl.findMany({
+      select:{
+        PlotAllotmentID : true,
+        PlotsTbl : {
+          select:{
+            Plots:true,
+          }
+        },
+        AllotmentDate:true,
+        AllotmentTime:true,
+        FileNo:true,
+        
+      }
+    });
+
+    const AllotmentPlot =  allPlots.map((plot) => {
+      return {
+        PlotAllotmentID: plot.PlotAllotmentID,
+        Plots:plot.PlotsTbl.Plots,
+        AllotmentDate:plot.AllotmentDate.toISOString().split('T')[0],
+        AllotmentTime:plot.AllotmentTime.toISOString().split('T')[1],
+        FileNo:plot.FileNo,
+        
+      }
+  
+    })
+
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const serializedPlots = jsonSerializer.stringify(AllotmentPlot);
 
     res.send(serializedPlots);
   } catch (error) {
@@ -25,16 +51,27 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
 
 //Get 1 Details
 router.get('/details', protect,isAdmin, async function (req, res, next) {
+
+   const {PlotAllotmentID} = req.query
+  
   try {
+
     const allPlots = await prisma.plotAllotmentTbl.findFirst({
       where:{
-        PlotAllotmentID : parseInt(req.body.PlotAllotmentID)
+        PlotAllotmentID : parseInt(PlotAllotmentID)
       }
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    const PlotAllotment = {
+      PlotAllotmentID: allPlots.PlotAllotmentID,
+      AllotmentDate:allPlots.AllotmentDate.toISOString().split('T')[0],
+      AllotmentTime:allPlots.AllotmentTime.toISOString().split('T')[1],
+      FileNo:allPlots.FileNo,
+    }
+
     // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const serializedPlots = jsonSerializer.stringify(PlotAllotment);
 
     res.send(serializedPlots);
   } catch (error) {

@@ -17,8 +17,8 @@ router.get('/', protect, async function (req, res, next) {
       const sdate = new Date(startDate);
       const edate = new Date(endDate);
 
-      const payments = await prisma.$queryRaw`
-        SELECT
+      var payments = await prisma.$queryRaw`
+        SELECT 
           rt."Id" ,
           mf."ApplicationNo",
           mf."Date",
@@ -28,25 +28,18 @@ router.get('/', protect, async function (req, res, next) {
           rt."ReceivedAmount",
           mf."PlotNo",
           ag."AgentName"
-        FROM "MainAppForm" AS mf
-        JOIN "AgentTbl" AS ag
-        ON mf."Agent" = ag."AgentID"
-        JOIN "ReceiptTbl" AS rt
-        ON mf."FileNo" = rt."FileNo"
-        WHERE rt."ModeOfPayment" = 'Cash'
-        AND (rt."Date" BETWEEN ${sdate} AND ${edate})
+          FROM "MainAppForm" AS mf
+          JOIN "AgentTbl" AS ag
+          ON mf."Agent" = ag."AgentID"
+          JOIN "ReceiptTbl" AS rt
+          ON mf."FileNo" = rt."FileNo"
+          WHERE rt."ModeOfPayment" = 'Cash'
+          AND (rt."Date" BETWEEN ${sdate} AND ${edate})
       `;
       
-      const Cashpayments = payments.map(item => ({
-        ...item,
-        Date: item.Date.toISOString().split('T')[0],
-      }));
 
-      const jsonSerializer = JSONbig({ storeAsString: true });
-      const serializedPayments = jsonSerializer.stringify(Cashpayments);
-      res.send(serializedPayments);
     } else {
-      const payments = await prisma.$queryRaw`
+      var payments = await prisma.$queryRaw`
         SELECT 
           rt."Id" ,
           mf."ApplicationNo",
@@ -62,24 +55,25 @@ router.get('/', protect, async function (req, res, next) {
         ON mf."Agent" = ag."AgentID"
         JOIN "ReceiptTbl" AS rt
         ON mf."FileNo" = rt."FileNo"
-        ON mf."FileNo" = rt."FileNo"
         WHERE rt."ModeOfPayment" = 'Cash'
       `;
       
-      const Cashpayments = payments.map(item => ({
-        ...item,
-        Date: item.Date.toISOString().split('T')[0],
-      }));
-
-      const jsonSerializer = JSONbig({ storeAsString: true });
-      const serializedPayments = jsonSerializer.stringify(Cashpayments);
-      res.send(serializedPayments);
+      
     }
+    const Cashpayments = payments.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
+
+    const jsonSerializer = JSONbig({ storeAsString: true });
+    const serializedPayments = jsonSerializer.stringify(Cashpayments);
+    res.send(serializedPayments);
   } catch (error) {
     console.error(error);
     next(error);
   }
 });
+
 
 
 

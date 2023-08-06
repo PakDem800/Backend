@@ -7,13 +7,13 @@ const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
 var { isAdmin,protect } = require('../middleware/authMiddleware')
 
-router.get('/',protect, async function (req, res, next) {
+router.get('/', protect, async function (req, res, next) {
   try {
-    const {userEnteredFileNo} = req.body; 
-   
-    const paymentSchedule = await prisma.paymentSchedule.findFirst({
+    const { userEnteredFileNo } = req.query;
+
+    const paymentSchedule = await prisma.paymentSchedule.findMany({
       where: {
-        FileNo: userEnteredFileNo,
+        FileNo: parseInt(userEnteredFileNo),
       },
       select: {
         PaymentScheduleID: true,
@@ -29,11 +29,19 @@ router.get('/',protect, async function (req, res, next) {
       },
     });
 
-
+    const payments = paymentSchedule.map(item => ({
+      PaymentScheduleID: item.PaymentScheduleID,
+      FileNo: item.FileNo,
+      ApplicantName: item.MainAppForm.ApplicantName,
+      Date: item.MainAppForm.Date.toISOString().split('T')[0],
+      MonthIyInstallement: item.MonthIyInstallement,
+      DueDate: item.DueDate.toISOString().split('T')[0],
+      
+    }));
 
     // Serialize the BigInt values using json-bigint
     const jsonSerializer = JSONbig({ storeAsString: true });
-    const serializedpaymentSchedule = jsonSerializer.stringify(paymentSchedule);
+    const serializedpaymentSchedule = jsonSerializer.stringify(payments);
 
     res.send(serializedpaymentSchedule);
   } catch (error) {
@@ -41,5 +49,6 @@ router.get('/',protect, async function (req, res, next) {
     next(error);
   }
 });
+
 
 module.exports = router;

@@ -9,11 +9,38 @@ var { isAdmin,protect } = require('../middleware/authMiddleware')
 
 router.get('/', protect,isAdmin,async function (req, res, next) {
   try {
+
     const allPlots = await prisma.plotCancellationLetter.findMany();
+
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+      const files = await prisma.mainAppForm.findMany({
+        select: {
+          ApplicationNo: true,
+          FileNo: true,
+        },
+      })
+
+      
+
+
+      const cacncelledPlots = allPlots.map((allPlot) => {
+        const File = files.find((file) => allPlot.PlotID == file.ApplicationNo);
+  
+        return {
+          PlotCancelID : allPlot.PlotCancelID,
+          CancellationDate : allPlot.CancellationDate.toISOString().split('T')[0],
+          AmountNotPaid : allPlot.AmountNotPaid,
+          ReasonForCancellation : allPlot.ReasonForCancellation,
+          FileNo : File.FileNo
+        
+        };
+      });
+
+  
+
     // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const serializedPlots = jsonSerializer.stringify(cacncelledPlots);
 
     res.send(serializedPlots);
   } catch (error) {
@@ -23,16 +50,36 @@ router.get('/', protect,isAdmin,async function (req, res, next) {
 });
 
 router.get('/details', async function (req, res, next) {
+
+  const {PlotCancelID} = req.query
+
   try {
     const allPlots = await prisma.plotCancellationLetter.findFirst({
       where:{
-        PlotCancelID : parseInt(req.body.PlotCancelID)
+        PlotCancelID : parseInt(PlotCancelID)
       }
     });
+
+    const mainAppForm =  await prisma.mainAppForm.findFirst({
+      where:{
+        ApplicationNo : allPlots.PlotID
+      },
+      select:{
+        FileNo: true,
+      }
+    })
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    const plotDetails = {
+      PlotCancelID : allPlots.PlotCancelID,
+      CancellationDate : allPlots.CancellationDate.toISOString().split('T')[0],
+      AmountNotPaid : allPlots.AmountNotPaid,
+      ReasonForCancellation : allPlots.ReasonForCancellation,
+      FileNo : mainAppForm.FileNo
+    }
+
     // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const serializedPlots = jsonSerializer.stringify(plotDetails);
 
     res.send(serializedPlots);
   } catch (error) {

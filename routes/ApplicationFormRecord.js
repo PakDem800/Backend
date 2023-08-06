@@ -11,7 +11,7 @@ var { isAdmin ,protect } = require('../middleware/authMiddleware')
 
 router.get('/', protect,async function (req, res, next) {
   try {
-    const {fileNo} = req.body;
+    const {fileNo} = req.query;
     
 
     const result = await prisma.$queryRaw`
@@ -45,11 +45,24 @@ router.get('/', protect,async function (req, res, next) {
     `;
 
 
-
+  ApplicationRecord = result.map((r)=>{
+    return {
+      Date: r.Date.toISOString().split('T')[0],
+      File: r.FileNo,
+      Area: r.Area,
+      Plot: r.PlotNo,
+      Total_Amount: r.TotalAmount,
+      Down_Payment: r.DownPayment,
+      Agent: r.AgentName,
+      Applicant_Name: r.ApplicantName,
+      Received_Amount: r.ReceivedAmountSum ? r.ReceivedAmountSum : 0,
+      Balance : parseInt(parseInt(r.TotalAmount) - parseInt(r.ReceivedAmountSum ? r.ReceivedAmountSum : 0))
+    }
+  })
 
     // Serialize the response using json-bigint
     const jsonSerializer = JSONbig({ storeAsString: true });
-    const serializedResponse = jsonSerializer.stringify(result);
+    const serializedResponse = jsonSerializer.stringify(ApplicationRecord);
     res.send(serializedResponse);
     
   } catch (error) {

@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/allotmentForm',allotmentformRouter)
 app.use('/commission' , commissionRouter)
-app.use('/ledger' , ledgerRouter)
+app.use('/LedgerReport' , ledgerRouter)
 app.use('/expenditure',expenditureRouter)
 app.use('/plotprice',plotPriceRouter)
 app.use('/Plots' , plotRouter)
