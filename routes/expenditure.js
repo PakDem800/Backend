@@ -9,14 +9,14 @@ const app = express();
 app.use(bodyParser.json());
 
 const prisma = new PrismaClient();
-var { isAdmin ,ExpenditureAuthorization , protect } = require('../middleware/authMiddleware')
+var { isAdmin ,ExpenditureAuthorization , protect } = require('../middleware/authMiddleware');
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // expenditure Report with date range filter
 router.get('/',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
-    const {startDate , endDate} = req.body
+    const {startDate , endDate} = req.query
 
     if (!startDate || !endDate) {
       return res.status(400).send('Both start date and end date are required.');
@@ -53,7 +53,44 @@ router.get('/',protect,ExpenditureAuthorization, async function (req, res, next)
       },
     });
 
-    const serializedallreceipt = jsonSerializer.stringify(allreceipt);
+    const combinedData = allreceipt.map(item => {
+      if (item.ExpenseHeadsTbls !== null) {
+        const { ExpenseSubHead, ExpenseNature } = item.ExpenseHeadsTbls;
+        return {
+          id: item.ExpenditureID,
+          ExpenseSubHead,
+          ExpenseNature, 
+          ExpDate: item.ExpDate.toISOString().split('T')[0],
+          Amount: item.Amount,
+          Remarks: item.Remarks,
+          ExpenditureNature: item.ExpenditureNature,
+          PVNo: item.PVNo,
+          ModeOfPayment: item.ModeOfPayment,
+          ToPayee: item.ToPayee,
+          
+        };
+      }
+      else {
+        return {
+          id: item.ExpenditureID, 
+          ExpDate: item.ExpDate.toISOString().split('T')[0],
+          Amount: item.Amount,
+          Remarks: item.Remarks,
+          ExpenditureNature: item.ExpenditureNature,
+          PVNo: item.PVNo,
+          ModeOfPayment: item.ModeOfPayment,
+          ToPayee: item.ToPayee,
+        };
+      }
+    
+    });
+    
+
+    
+    console.log(combinedData)
+    const serializedallreceipt = jsonSerializer.stringify(combinedData);
+
+    
 
     res.send(serializedallreceipt);
   } catch (error) {
@@ -124,7 +161,7 @@ router.post('/createExpenditure',protect,ExpenditureAuthorization, async functio
 router.get('/details',protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
     
-    const {ExpenditureID} = req.body
+    const {ExpenditureID} = req.query
 
     // Prisma query to retrieve expenditure records within the specified date range
     const receipt = await prisma.expenditureTbl.findFirst({
@@ -151,7 +188,21 @@ router.get('/details',protect,ExpenditureAuthorization, async function (req, res
       },
     });
 
-    const serializedallreceipt = jsonSerializer.stringify(receipt);
+    const expenditure = {
+      ExpenditureID: receipt.ExpenditureID,
+      ExpDate: receipt.ExpDate.toISOString().split('T')[0],
+      Amount: receipt.Amount,
+      Remarks: receipt.Remarks,
+      ExpenditureNature: receipt.ExpenditureNature,
+      PVNo: receipt.PVNo,
+      ModeOfPayment: receipt.ModeOfPayment,
+      ToPayee: receipt.ToPayee,
+      // Conditional check to include properties from ExpenseHeadsTbls only if it's not null
+      ...(receipt.ExpenseHeadsTbls !== null ? receipt.ExpenseHeadsTbls : {}),
+    };
+    
+
+    const serializedallreceipt = jsonSerializer.stringify(expenditure);
 
     res.send(serializedallreceipt);
   } catch (error) {

@@ -10,11 +10,27 @@ var { isAdmin,protect } = require('../middleware/authMiddleware')
 
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
-    const allPricePlots = await prisma.plotPrice.findMany();
+    const allPricePlots = await prisma.plotPrice.findMany({
+      select:{
+        PlotPriceID:true,
+        PlotCategory:true,
+        PlotSize:true,
+        PriceDate:true,
+        PlotPrice:true,
+        MonthlyInstallment:true,
+        TotalMonthlyInstallments:true,
+        Extra15Percent:true
+      }
+    });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    const PlotPrices = allPricePlots.map(item => ({
+      ...item,
+      PriceDate: item.PriceDate.toISOString().split('T')[0],
+    }));
+
     // Serialize the BigInt values using json-bigint
-    const serializedPricePlots = jsonSerializer.stringify(allPricePlots);
+    const serializedPricePlots = jsonSerializer.stringify(PlotPrices);
 
     res.send(serializedPricePlots);
   } catch (error) {
@@ -27,7 +43,7 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
 router.get('/details',protect,isAdmin, async function (req, res, next) {
   try {
 
-    const  { PlotPriceID } = req.body
+    const  { PlotPriceID } = req.query
 
     const allPricePlots = await prisma.plotPrice.findFirst({
       where:{
@@ -36,8 +52,24 @@ router.get('/details',protect,isAdmin, async function (req, res, next) {
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    PricePlot = {
+      PlotPriceID: allPricePlots.PlotPriceID,
+      PlotCategory: allPricePlots.PlotCategory,
+      PlotSize: allPricePlots.PlotSize,
+      PriceDate: allPricePlots.PriceDate.toISOString().split('T')[0],
+      PlotPrice: allPricePlots.PlotPrice,
+      MonthlyInstallment: allPricePlots.MonthlyInstallment,
+      TotalMonthlyInstallments: allPricePlots.TotalMonthlyInstallments,
+      Extra15Percent: allPricePlots.Extra15Percent,
+      TokenMoney: allPricePlots.TokenMoney,
+      ConfirmationAdvance: allPricePlots.ConfirmationAdvance,
+      QuarterlyInstallment: allPricePlots.QuarterlyInstallment,
+      TotalInstallmentQuarterly: allPricePlots.TotalInstallmentQuarterly,
+    }
+    
+
     // Serialize the BigInt values using json-bigint
-    const serializedPricePlots = jsonSerializer.stringify(allPricePlots);
+    const serializedPricePlots = jsonSerializer.stringify(PricePlot);
 
     res.send(serializedPricePlots);
   } catch (error) {

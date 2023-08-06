@@ -9,7 +9,16 @@ var { isAdmin,protect } = require('../middleware/authMiddleware')
 
 router.get('/',protect, isAdmin,async function (req, res, next) {
   try {
-    const allPlots = await prisma.plotsTbl.findMany();
+    const allPlots = await prisma.plotsTbl.findMany({
+      select:{
+        PlotID:true,
+        Plots:true,
+        PlotNo:true,
+        Block:true,
+        sold:true
+
+      }
+    });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
@@ -26,7 +35,7 @@ router.get('/',protect, isAdmin,async function (req, res, next) {
 router.get('/details',protect,isAdmin, async function (req, res, next) {
   try {
 
-    const { PlotID } = req.body
+    const { PlotID } = req.query
 
     const allPlots = await prisma.plotsTbl.findFirst({
       where:{

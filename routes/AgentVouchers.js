@@ -36,24 +36,37 @@ router.get('/all',protect,isAdmin, async function (req, res, next) {
   }
 });
 
-router.get('/',protect,isAdmin, async function (req, res, next) {
+router.get('/', protect, async function (req, res, next) {
   try {
-    const {agentName} = req.body;
-    // will be req.body later on; also, prisma is case sensitive 
+    const { agentName } = req.query;
 
-    const agentVouchers = await prisma.agentTbl.findFirst({
+    const agentVouchers = await prisma.agentTbl.findMany({
       where: {
-        AgentName: agentName, // Perform a case-insensitive comparison later on if needed
+        AgentName: agentName,
       },
       include: {
         VoucherTbl: true,
       },
     });
 
+    const vouchers = agentVouchers.flatMap((voucher) => {
+      return voucher.VoucherTbl.map((vouch) => {
+        return {
+          VoucherNo: vouch.VoucherID,
+          VoucherID: vouch.VoucherID,
+          File: vouch.FileNo,
+          Date: vouch.VoucherDate?.toISOString().split('T')[0],
+          Amount: vouch.Amount,
+          Description: vouch.Description,
+          Agent_Name: voucher.AgentName,
+        };
+      });
+    });
+
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
-    const serializedAgentVouchers = jsonSerializer.stringify(agentVouchers);
+    const serializedAgentVouchers = jsonSerializer.stringify(vouchers);
 
     res.send(serializedAgentVouchers);
   } catch (error) {
@@ -61,6 +74,7 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
     next(error);
   }
 });
+
 
 
 router.get('/details',isAdmin, protect,async function (req, res, next) {

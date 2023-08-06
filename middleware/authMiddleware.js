@@ -44,7 +44,7 @@ const isAdmin = asyncHandler(async (req, res, next) => {
 
       const decoded = jwt.verify(token, SECRET_KEY);
 
-      console.log(decoded.RoleId)
+   
       
       if (decoded.RoleId === 1 || decoded.RoleId === 4) {
         // Check if the roleid is 1 (Admin)
@@ -79,7 +79,6 @@ const ExpenditureAuthorization = asyncHandler(async (req, res, next) => {
 
       const decoded = jwt.verify(token, SECRET_KEY);
 
-      console.log(decoded.RoleId)
       
       if (  
             decoded.RoleId === 1 ||

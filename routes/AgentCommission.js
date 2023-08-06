@@ -11,17 +11,17 @@ var { protect , isAdmin} = require('../middleware/authMiddleware')
 
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
-    const {agentName} = req.body;
+    const {agentName} = req.query;
+
+  
 
     const mainForms = await prisma.$queryRaw`
       SELECT
+        main.ApplicationNo,
         main.FileNo,
         main.ApplicantName,
-        main.PlotNo,
         main.TotalAmount,
         main.CommissionPercentage,
-        main.DownPayment,
-        agent.AgentName,
         (main.TotalAmount * (CAST(agent.CommissionPercentage AS DECIMAL) / 100)) as TotalCommission
       FROM
         MainAppForm main

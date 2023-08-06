@@ -15,7 +15,7 @@ const jsonSerializer = JSONbig({ storeAsString: true });
 router.get('/', protect,ExpenditureAuthorization, async function (req, res, next) {
   try {
 
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate } = req.query;
 
 
     if (!startDate || !endDate) {
@@ -28,7 +28,7 @@ router.get('/', protect,ExpenditureAuthorization, async function (req, res, next
 
     // Month Wise
     const monthWiseReportQuery = await prisma.$queryRaw`
-    SELECT [Date], [Total_Received_Amount], [Office_Expence], [Net_Amount]
+    SELECT [Date] As ID , [Date], [Total_Received_Amount], [Office_Expence], [Net_Amount]
     FROM [pakdempk].[dbo].[MonthWiseReport]
     WHERE [Date] >= ${startDateObj} AND [Date] <= ${endDateObj};
     `;
@@ -64,10 +64,17 @@ router.get('/', protect,ExpenditureAuthorization, async function (req, res, next
     WHERE EH.[ExpenseNature] = 'Development Expense' AND ET.ExpDate >= ${startDateObj} AND ET.ExpDate <= ${endDateObj};
     `;
 
+
+    const MonthlyR = monthWiseReportQuery.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
+
+
     const result = {
 
-    monthWiseReport: monthWiseReportQuery
-                        ? monthWiseReportQuery : 0,
+    monthWiseReport: MonthlyR
+                        ? MonthlyR : 0,
 
     totalReceivedAmount: totalReceivedAmountQuery
                         ? totalReceivedAmountQuery : 0,

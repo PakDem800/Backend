@@ -12,11 +12,41 @@ const jsonSerializer = JSONbig({ storeAsString: true });
 //All agents
 router.get('/', protect ,isAdmin,async function (req, res, next) {
   try {
-    const allAgents = await prisma.agentTbl.findMany();
+    const allAgents = await prisma.agentTbl.findMany({
+      select: {
+        AgentID: true,
+        RegistrationDate: true,
+        AgentName: true,
+        AgentCNICNo: true,
+        CompanyName: true,
+        OfficeNo:true,
+        Phone: true,
+        Email: true,
+        CommissionPercentage:true,
+        DownPaymentCommission:true,
+        InstallmentCommission:true
+      }
+    });
+
+    const Agents = allAgents.map((agent)=> {
+      return {
+        AgentID : agent.AgentID,
+        Date : agent.RegistrationDate?.toISOString().split('T')[0],
+        Name : agent.AgentName,
+        CNIC : agent.AgentCNICNo,
+        Company : agent.CompanyName,
+        Office_No : agent.OfficeNo,
+        Phone : agent.Phone,
+        Email : agent.Email,
+        Commission_percent : agent.CommissionPercentage,
+        DP_Com : agent.DownPaymentCommission,
+        Installment_Comm : agent.InstallmentCommission
+    } })
+
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
-    const serializedallAgents = jsonSerializer.stringify(allAgents);
+    const serializedallAgents = jsonSerializer.stringify(Agents);
 
     res.send(serializedallAgents);
   } catch (error) {
@@ -29,7 +59,7 @@ router.get('/', protect ,isAdmin,async function (req, res, next) {
 router.get('/details',protect,isAdmin, async function (req, res, next) {
   try {
 
-    const { AgentID } =  req.body
+    const { AgentID } =  req.query
 
     const allAgents = await prisma.agentTbl.findFirst({
       where : {

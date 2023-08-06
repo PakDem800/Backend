@@ -9,19 +9,12 @@ var { isAdmin,protect , ExpenditureAuthorization } = require('../middleware/auth
 
 const jsonSerializer = JSONbig({ storeAsString: true });
 
-router.get('/',protect, async function (req, res, next) {
+router.get('/', protect, async function (req, res, next) {
   try {
-    //will be from user
-    const {startDate ,endDate} = req.body;
-
+    // will be from user
+    const { startDate, endDate } = req.query;
 
     const mainForms = await prisma.mainAppForm.findMany({
-      where: {
-        Date: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
-      },
       select: {
         ApplicationNo: true,
         ApplicantName: true,
@@ -39,27 +32,36 @@ router.get('/',protect, async function (req, res, next) {
       select: {
         Id: true,
         ReceiptNo: true,
-        FileNo: true,
         Date: true,
         ReceivedAmount: true,
         ModeOfPayment: true,
-        Plot_No: true,
         AgentName: true,
       },
     });
 
-    const jointData = {
-      mainForms,
-      receipts,
-    };
+    const DailyReport = receipts.map((receipt) => {
+      const mainForm = mainForms.find((mainForm) => receipt.ReceiptNo === mainForm.ApplicationNo);
+      return {
+        Id: receipt.Id,
+        ApplicationNo: mainForm?.ApplicationNo || '',
+        ApplicantName: mainForm?.ApplicantName || '',
+        Date: receipt.Date.toISOString().split('T')[0],
+        FileNo: mainForm?.FileNo || '',
+        ReceivedAmount: receipt.ReceivedAmount,
+        ModeOfPayment: receipt.ModeOfPayment,
+        ReceiptNo: receipt.ReceiptNo,
+        AgentName: receipt.AgentName,
+      };
+    });
 
     const jsonSerializer = JSONbig({ storeAsString: true });
-    const serializedJointData = jsonSerializer.stringify(jointData);
+    const serializedJointData = jsonSerializer.stringify(DailyReport);
     res.send(serializedJointData);
   } catch (error) {
     console.error(error);
     next(error);
   }
 });
+
 
 module.exports = router;

@@ -457,7 +457,14 @@ router.delete('/mainform/delete',protect,isAdmin , async function (req, res, nex
 router.get('/refundSchedule',protect, async function(req,res,next){
     try {
         const allMainForm = await prisma.refundTbl.findMany();
-        const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
+
+        const refund = allMainForm.map((item)=>{
+          return{
+            ...item,
+            RefundDate : item.RefundDate.toISOString().split('T')[0]
+          }
+        })
+        const serializedMainAppForm = jsonSerializer.stringify(refund);
     
         res.send(serializedMainAppForm);
       } catch (error) {

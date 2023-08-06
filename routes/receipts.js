@@ -17,9 +17,24 @@ router.get('/regularReceipt',protect, async function (req, res, next) {
       where: {
         ReceiptType : 1
       },
+      select : {
+        Id:true,
+        FileNo : true,
+        Date : true,
+        ReceivedAmount : true,
+        ReceivedFrom:true,
+        Amount_For_The_Month_Of : true,
+        Receipt:true,
+        Plot_No:true,
+        Remarks:true
+      }
     });
+    const MainAppForm = allMainForm.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
 
-    const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
 
     res.send(serializedMainAppForm);
   } catch (error) {
@@ -37,11 +52,26 @@ router.get('/transferReceipt',protect, async function (req, res, next) {
     // Prisma query to retrieve refund records with ReceivedAmount = 15000
     const allMainForm = await prisma.receiptTbl.findMany({
       where: {
-        ReceiptType: 2,
+        ReceiptType : 2
       },
+      select : {
+        Id:true,
+        FileNo : true,
+        Date : true,
+        ReceivedAmount : true,
+        ReceivedFrom:true,
+        Amount_For_The_Month_Of : true,
+        Receipt:true,
+        Plot_No:true,
+        Remarks:true
+      }
     });
+    const MainAppForm = allMainForm.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
 
-    const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
 
     res.send(serializedMainAppForm);
   } catch (error) {
@@ -54,13 +84,29 @@ router.get('/transferReceipt',protect, async function (req, res, next) {
 router.get('/DevelopmentReceipt',protect, async function (req, res, next) {
   try {
 
+    // Prisma query to retrieve refund records with ReceivedAmount = 15000
     const allMainForm = await prisma.receiptTbl.findMany({
       where: {
         ReceiptType : 3
       },
+      select : {
+        Id:true,
+        FileNo : true,
+        Date : true,
+        ReceivedAmount : true,
+        ReceivedFrom:true,
+        Amount_For_The_Month_Of : true,
+        Receipt:true,
+        Plot_No:true,
+        Remarks:true
+      }
     });
+    const MainAppForm = allMainForm.map(item => ({
+      ...item,
+      Date: item.Date.toISOString().split('T')[0],
+    }));
 
-    const serializedMainAppForm = jsonSerializer.stringify(allMainForm);
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
 
     res.send(serializedMainAppForm);
   } catch (error) {
@@ -179,7 +225,7 @@ router.delete('/delete',protect,isAdmin, async function (req, res, next) {
 //Get 1 receipt
 router.get('/details',protect, async function (req, res, next) {
   try {
-    const { receiptId } = req.body;
+    const { receiptId } = req.query;
 
     if (!receiptId) {
       return res.status(400).json({
@@ -201,10 +247,7 @@ router.get('/details',protect, async function (req, res, next) {
 
     const serializedRecord = jsonSerializer.stringify(Record);
 
-    res.status(200).json({
-      success: true,
-      data: serializedRecord,
-    });
+    res.send(serializedRecord)
   } catch (error) {
     console.error(error);
     res.status(500).json({
