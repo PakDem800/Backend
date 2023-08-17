@@ -14,15 +14,15 @@ router.get('/all',protect,isAdmin, async function (req, res, next) {
     const agentVouchers = await prisma.$queryRaw`
       SELECT
         "AgentTbl"."AgentID",
-        "AgentTbl"."AgentName",
-        "VoucherTbl"."VoucherID",
-        "VoucherTbl"."FileNo",
-        "VoucherTbl"."VoucherNo",
-        "VoucherTbl"."VoucherDate",
-        "VoucherTbl"."Amount",
+        "AgentTbl"."AgentName" as Agent_Name,
+        "VoucherTbl"."VoucherID" as Voucher_ID,
+        "VoucherTbl"."FileNo" as File_No,
+        "VoucherTbl"."VoucherNo" as Voucher_No,
+        "VoucherTbl"."VoucherDate" as Voucher_Date,
+        "VoucherTbl"."Amount" ,
         "VoucherTbl"."Description",
-        "VoucherTbl"."CommissionPercentage",
-        "VoucherTbl"."CommissionType",
+        "VoucherTbl"."CommissionPercentage" as Commission_Percentage,
+        "VoucherTbl"."CommissionType" as Commission_Type,
         "VoucherTbl"."BBF"
       FROM "AgentTbl"
       LEFT JOIN "VoucherTbl" ON "AgentTbl"."AgentID" = "VoucherTbl"."Agent"
@@ -53,7 +53,7 @@ router.get('/', protect, async function (req, res, next) {
       return voucher.VoucherTbl.map((vouch) => {
         return {
           VoucherNo: vouch.VoucherID,
-          VoucherID: vouch.VoucherID,
+          Voucher_ID: vouch.VoucherID,
           File: vouch.FileNo,
           Date: vouch.VoucherDate?.toISOString().split('T')[0],
           Amount: vouch.Amount,
@@ -114,22 +114,22 @@ router.post('/createVoucher',protect, isAdmin,async function (req, res, next) {
       BBF,
       VoucherNo,
     } = req.body;
+    
 
     const newVoucher = await prisma.voucherTbl.create({
       data: {
-        FileNo,
-        VoucherDate : new Date(VoucherDate),
-        Agent,
-        Amount,
+        FileNo : parseInt(FileNo),
+        VoucherDate : VoucherDate ? new Date(VoucherDate) : new Date(),
+        Agent : parseInt(Agent),
+        Amount : parseInt(Amount),
         Description,
         CommissionPercentage,
         CommissionType,
         BBF,
-        VoucherNo,
+        VoucherNo
       },
     });
 
-    console.log(newVoucher);
     const serializedNewVoucher = jsonSerializer.stringify(newVoucher);
 
     res.status(200).json(serializedNewVoucher);

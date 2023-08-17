@@ -32,7 +32,7 @@ router.get('/',protect, async function (req, res, next) {
       return voucher.VoucherTbl.map((vouch) => {
         return {
           VoucherNo: vouch.VoucherID,
-          VoucherID: vouch.VoucherID,
+          Voucher_ID: vouch.VoucherID,
           File: vouch.FileNo,
           Date: vouch.VoucherDate?.toISOString().split('T')[0],
           Amount: vouch.Amount,
@@ -88,7 +88,7 @@ router.get('/details',protect, async function (req, res, next) {
 
 
     const voucher = {
-      VoucherNo: agentsAndVouchers.VoucherID,
+      Voucher_No: agentsAndVouchers.VoucherID,
       File: agentsAndVouchers.FileNo,
       Date: agentsAndVouchers.VoucherDate?.toISOString().split('T')[0],
       Amount: agentsAndVouchers.Amount,

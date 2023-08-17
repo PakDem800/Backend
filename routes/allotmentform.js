@@ -33,8 +33,42 @@ router.get('/mainform',protect, async function (req, res, next) {
     });
 
     const MainAppForm = allMainForm.map(item => ({
-      ...item,
-      Date: item.Date.toISOString().split('T')[0],
+        ApplicationNo : item.ApplicationNo,
+        Date:item.Date.toISOString().split('T')[0],
+        File_No : item.FileNo,
+        Area : item.Area,
+        Plot_No : item.PlotNo,
+        Applicant_Name : item.ApplicantName,
+        Contact_No : item.ContactNo,
+        Total_Amount : item.TotalAmount,
+        Down_Payment : item.DownPayment
+      
+    }));
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
+
+    res.send(serializedMainAppForm);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+router.get('/mainform/Files',protect, async function (req, res, next) {
+  try {
+    const allMainForm = await prisma.mainAppForm.findMany({
+      select : {
+        ApplicationNo : true,
+        
+        FileNo : true,
+        
+      }
+    });
+
+    const MainAppForm = allMainForm.map(item => ({
+        ApplicationNo : item.ApplicationNo,
+        FileNo : item.FileNo,
+      
     }));
     const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
 
@@ -50,6 +84,7 @@ router.post('/CreatemainForm' ,protect,async function (req, res, next) {
   try {
     
     const {
+      UserID,
       date,
       FileNo,
       FileType,
@@ -107,20 +142,20 @@ router.post('/CreatemainForm' ,protect,async function (req, res, next) {
       DeductedAmount,
       InstallmentsForRefund,
       RefundAmount,
-      // Add other fields from req.body here
+      
     } = req.body;
     
     
     const data = {
-      Date : new Date(date) ,
+      Date : date ? new Date(date) : new Date()  ,
       FileNo,
       FileType,
       Area,
       PlotNo,
-      PlotID,
+      PlotID : parseInt(PlotID),
       Phase,
       Block,
-      Total_Installment,
+      Total_Installment : parseInt(Total_Installment),
       PlotLocation,
       ApplicantName,
       FatherOrHusband,
@@ -134,42 +169,41 @@ router.post('/CreatemainForm' ,protect,async function (req, res, next) {
       NoKAddress,
       Refrence,
       ModeOfPayment,
-      InvestorAmount,
-      InvestorDownPayment,
-      TotalAmount,
-      DownPayment,
-      MonthlyInstallment,
-      InvestorMonthlyInstallment,
-      CornerCharges,
-      GrandTotal,
+      InvestorAmount : parseInt(InvestorAmount),
+      InvestorDownPayment : parseInt(InvestorDownPayment),
+      TotalAmount : parseInt(TotalAmount),
+      DownPayment : parseInt(DownPayment),
+      MonthlyInstallment : parseInt(MonthlyInstallment),
+      InvestorMonthlyInstallment : parseInt(InvestorMonthlyInstallment),
+      CornerCharges : parseInt(CornerCharges),
+      GrandTotal : parseInt(GrandTotal),
       AppRemarks,
       RefMobileNo,
-      Agent,
-      CommissionPercentage,
+      Agent  : parseInt(Agent),
+      CommissionPercentage: parseInt(CommissionPercentage),
       NoteNo,
       IsActive,
       IsPlotCancel,
       IsCurrentWith,
       PlotCategory,
-      Discount,
+      Discount : parseInt(Discount),
       PossesionStatus,
-      SubAgent,
-      SubAgentComm,
-      Investor,
-      Prepaired_By,
+      SubAgent :parseInt(SubAgent),
+      SubAgentComm :parseInt(SubAgentComm),
+      Investor :parseInt(Investor),
+      Prepaired_By :parseInt(Prepaired_By),
       Prepaired_by_Name,
-      TransferAmount,
-      TransferDate : new Date(TransferDate),
+      TransferAmount :parseInt(TransferAmount),
+      TransferDate : TransferDate ? new Date(TransferDate) : null,
       DevelopmentChargesIncluded,
-      DevelopmentAmount,
-      DevelopmentChargesDate : new Date(DevelopmentChargesDate),
-      UpdatedBy,
+      DevelopmentAmount :parseInt(DevelopmentAmount),
+      DevelopmentChargesDate : DevelopmentChargesDate ? new Date(DevelopmentChargesDate) : null ,
+      UpdatedBy :parseInt(UpdatedBy),
       RefundedStatus,
-      RefundDate : new Date(RefundDate),
-      DeductedAmount,
-      InstallmentsForRefund,
-      RefundAmount,
-      // Add other fields from req.body here
+      RefundDate : RefundDate ? new Date(RefundDate) : null,
+      DeductedAmount :parseInt(DeductedAmount),
+      InstallmentsForRefund :parseInt(InstallmentsForRefund),
+      RefundAmount:parseInt(RefundAmount)
     };
     
     // Now you can use 'data' to create a new MainAppForm record in the database.
@@ -177,7 +211,41 @@ router.post('/CreatemainForm' ,protect,async function (req, res, next) {
     const newMainAppForm = await prisma.mainAppForm.create({
       data: data,
     });
-    console.log(newMainAppForm)
+    
+
+    if(DevelopmentChargesIncluded) {
+      const newReceipt = await prisma.receiptTbl.create({
+        data: {
+          ReceiptNo: newMainAppForm.ApplicationNo,
+          FileNo: newMainAppForm.FileNo,
+          Date: DevelopmentChargesDate ? new Date(DevelopmentChargesDate) : new Date(), 
+          ReceivedAmount: parseInt(DevelopmentAmount),
+          ReceivedFrom: ApplicantName,
+          AmountReceivedForPlot: PlotNo ? PlotNo : 'not entered',
+          ModeOfPayment: ModeOfPayment ? ModeOfPayment : 'Cash',
+          Receipt: newMainAppForm.ApplicationNo,
+          Prepaired_By: Prepaired_By ? parseInt(Prepaired_By) : 0,
+          Prepaired_by_Name: Prepaired_by_Name ? Prepaired_by_Name : "not mentioned",
+          ReceiptType: 3,
+        },
+      });
+      
+     
+    }
+
+    const userActivity = await prisma.testtable.create({
+      data:{
+        ApplicationNo : newMainAppForm.ApplicationNo,
+        Applicant_Name : 'Created',
+        Agent : UserID , 
+        Date : new Date(),
+        Receivied_Amount : 0,
+        Mode_Of_Payment : 'no',
+        Receipt : newMainAppForm.ApplicationNo,
+        File_No : newMainAppForm.FileNo
+      }
+    })
+    
     const serializedMainAppForm = jsonSerializer.stringify(newMainAppForm);
 
     res.status(200).json(serializedMainAppForm);    
@@ -204,21 +272,26 @@ router.get('/mainform/details', protect, async function (req, res, next) {
       return res.status(404).json({ error: 'Form not found' });
     }
 
-    // Get the FileNo from the mainAppForm
-    const fileNo = mainAppForm.FileNo;
+   
 
     // Find the latest date for the FileNo in the ReceiptTbl
     const latestReceiptDate = await prisma.receiptTbl.findFirst({
       where: {
-        FileNo: fileNo,
+        ReceiptNo: parseInt(ApplicationNo),
+        ReceivedAmount: {
+          gt: 0, 
+        },
       },
       orderBy: {
-        Date: 'desc', // Get the latest date
+        Date: 'desc', 
       },
     });
 
-    mainAppForm.Date = mainAppForm.Date.toISOString().split('T')[0]
-    
+    mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0]
+    mainAppForm.DevelopmentChargesDate = mainAppForm.DevelopmentChargesDate?.toISOString().split('T')[0]
+    mainAppForm.TransferDate = mainAppForm.TransferDate?.toISOString().split('T')[0]
+    mainAppForm.RefundDate = mainAppForm.RefundDate?.toISOString().split('T')[0]
+
     // Calculate the difference in months between the latest receipt date and today's date
     const today = new Date();
     const latestDate = latestReceiptDate ? new Date(latestReceiptDate.Date) : null;
@@ -235,9 +308,16 @@ router.get('/mainform/details', protect, async function (req, res, next) {
       let reason = '';
 
       if (monthDifference < 3) {
-        status = 'active';
-        reason = `installment pending from ${monthDifference} months`;
-      } else if (monthDifference < 6) {
+        if(monthDifference > 1 )
+          {
+            status = 'active';
+            reason = `installment pending from ${monthDifference} months`;
+          }
+          else{
+            status = 'active';
+            reason = ``;
+          }
+        } else if (monthDifference < 6) {
         status = 'inactive';
         reason = `Due to installment pending from ${monthDifference} months`;
       } else {
@@ -253,7 +333,7 @@ router.get('/mainform/details', protect, async function (req, res, next) {
 
     // Convert the response data to a JSON string
     const serializedResponseData = jsonSerializer.stringify(responseData);
-    console.log(serializedResponseData)
+    
     // Send the combined data as the response
     res.send(serializedResponseData);
   } catch (error) {
@@ -264,11 +344,13 @@ router.get('/mainform/details', protect, async function (req, res, next) {
 
 
 
-router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
+router.put('/mainform/update' ,protect,isAdmin,async function (req, res, next) {
   try {
 
+    
     // Get the form data from the request body
     const {
+      UserID,
       ApplicationNo,
       date,
       FileNo,
@@ -327,20 +409,20 @@ router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
       DeductedAmount,
       InstallmentsForRefund,
       RefundAmount,
-      // Add other fields from req.body here
+      
     } = req.body;
 
-    // Prepare the updated data object
+  
     const updatedData = {
       Date : new Date(date) ,
       FileNo,
       FileType,
       Area,
       PlotNo,
-      PlotID,
+      PlotID : parseInt(PlotID),
       Phase,
       Block,
-      Total_Installment,
+      Total_Installment : parseInt(Total_Installment),
       PlotLocation,
       ApplicantName,
       FatherOrHusband,
@@ -354,45 +436,44 @@ router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
       NoKAddress,
       Refrence,
       ModeOfPayment,
-      InvestorAmount,
-      InvestorDownPayment,
-      TotalAmount,
-      DownPayment,
-      MonthlyInstallment,
-      InvestorMonthlyInstallment,
-      CornerCharges,
-      GrandTotal,
+      InvestorAmount : parseInt(InvestorAmount),
+      InvestorDownPayment : parseInt(InvestorDownPayment),
+      TotalAmount : parseInt(TotalAmount),
+      DownPayment : parseInt(DownPayment),
+      MonthlyInstallment : parseInt(MonthlyInstallment),
+      InvestorMonthlyInstallment : parseInt(InvestorMonthlyInstallment),
+      CornerCharges : parseInt(CornerCharges),
+      GrandTotal : parseInt(GrandTotal),
       AppRemarks,
       RefMobileNo,
-      Agent,
-      CommissionPercentage,
+      Agent  : parseInt(Agent),
+      CommissionPercentage: parseInt(CommissionPercentage),
       NoteNo,
       IsActive,
       IsPlotCancel,
       IsCurrentWith,
       PlotCategory,
-      Discount,
+      Discount : parseInt(Discount),
       PossesionStatus,
-      SubAgent,
-      SubAgentComm,
-      Investor,
-      Prepaired_By,
+      SubAgent :parseInt(SubAgent),
+      SubAgentComm :parseInt(SubAgentComm),
+      Investor :parseInt(Investor),
+      Prepaired_By :parseInt(Prepaired_By),
       Prepaired_by_Name,
-      TransferAmount,
-      TransferDate : new Date(TransferDate),
+      TransferAmount :parseInt(TransferAmount),
+      TransferDate : TransferDate ? new Date(TransferDate) : null,
       DevelopmentChargesIncluded,
-      DevelopmentAmount,
-      DevelopmentChargesDate : new Date(DevelopmentChargesDate),
-      UpdatedBy,
+      DevelopmentAmount :parseInt(DevelopmentAmount),
+      DevelopmentChargesDate : DevelopmentChargesDate ? new Date(DevelopmentChargesDate) : null ,
+      UpdatedBy :parseInt(UpdatedBy),
       RefundedStatus,
-      RefundDate : new Date(RefundDate),
-      DeductedAmount,
-      InstallmentsForRefund,
-      RefundAmount,
-      // Add other fields from req.body here
+      RefundDate : RefundDate ? new Date(RefundDate) : null,
+      DeductedAmount :parseInt(DeductedAmount),
+      InstallmentsForRefund :parseInt(InstallmentsForRefund),
+      RefundAmount:parseInt(RefundAmount)
     };
 
-    // Update the mainAppForm in the database with the new data
+
     const updatedForm = await prisma.mainAppForm.update({
       where: {
         ApplicationNo,
@@ -400,20 +481,41 @@ router.put('/mainform/update',protect,isAdmin ,async function (req, res, next) {
       data: updatedData,
     });
 
-    const serializedUpdatedForm = jsonSerializer.stringify(updatedForm);
+    const userActivity = await prisma.testtable.create({
+      data:{
+        ApplicationNo : updatedForm.ApplicationNo,
+        Applicant_Name : 'Updated',
+        Agent : UserID , 
+        Date : new Date(),
+        Receivied_Amount : 0,
+        Mode_Of_Payment : 'no',
+        Receipt : updatedForm.ApplicationNo,
+        File_No : updatedForm.FileNo
+      }
+    })
 
-    res.send(serializedUpdatedForm);
+
+    // Convert the response data to a JSON string
+    const serializedResponseData = jsonSerializer.stringify(updatedForm);
+
+    
+
+    return res
+    .status(200)
+    .json(serializedResponseData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Error While Updating' });
   }
 });
 
 //Delete
 router.delete('/mainform/delete',protect,isAdmin , async function (req, res, next) {
   try {
-    const { applicationNo } = req.body;
+    const { UserID , applicationNo } = req.query;
 
+    console.log(applicationNo)
+    
     if (!applicationNo) {
       return res.status(400).json({
         success: false,
@@ -423,7 +525,12 @@ router.delete('/mainform/delete',protect,isAdmin , async function (req, res, nex
 
     const ApplicationNo = parseInt(applicationNo);
 
-    console.log(typeof(ApplicationNo));
+
+    const mainAppForm = await prisma.mainAppForm.findFirst({
+      where: {
+        ApplicationNo: parseInt(ApplicationNo),
+      },
+    });
 
     // Use Prisma client to delete the record
     const deletedRecord = await prisma.mainAppForm.delete({
@@ -432,9 +539,22 @@ router.delete('/mainform/delete',protect,isAdmin , async function (req, res, nex
       },
     });
 
+    const userActivity = await prisma.testtable.create({
+      data:{
+        ApplicationNo : mainAppForm.ApplicationNo,
+        Applicant_Name : 'Deleted',
+        Agent : UserID , 
+        Date : new Date(),
+        Receivied_Amount : 0,
+        Mode_Of_Payment : 'no',
+        Receipt : mainAppForm.ApplicationNo,
+        File_No : mainAppForm.FileNo ?  mainAppForm.FileNo : "not mentioned"
+      }
+    })
+
     res.status(200).json({
       success: true,
-      message: `Record with ApplicationNo ${applicationNo} has been deleted successfully.`
+      message: `Application Form is deleted successfully.`
     });
   } catch (error) {
     console.error(error);

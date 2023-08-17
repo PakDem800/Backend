@@ -19,6 +19,7 @@ router.get('/', protect,async function (req, res, next) {
             ...(PlotNo ? { PlotNo: PlotNo } : {}),
           },
           select: {
+            ApplicationNo:true,
             Date: true,
             FileNo: true,
             FileType: true,
@@ -30,7 +31,18 @@ router.get('/', protect,async function (req, res, next) {
         });
   
         
-      
+        const forms = mainForms.map((mainform)=>{
+          return {
+            ApplicationNo : mainform.ApplicationNo,
+            Date: mainform.Date?.toISOString().split('T')[0],
+            File_No: mainform.FileNo,
+            File_Type: mainform.FileType,
+            Plot_No: mainform.PlotNo,
+            Contact_No : mainform.ContactNo,
+            Applicant_Name: mainform.ApplicantName,
+            Agent: mainform.Agent,
+          }
+        })
   
 
     const jsonSerializer = JSONbig({ storeAsString: true });

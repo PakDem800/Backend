@@ -43,14 +43,14 @@ router.get('/', protect, async function (req, res, next) {
       const mainForm = mainForms.find((mainForm) => receipt.ReceiptNo === mainForm.ApplicationNo);
       return {
         Id: receipt.Id,
-        ApplicationNo: mainForm?.ApplicationNo || '',
-        ApplicantName: mainForm?.ApplicantName || '',
+        Application_No: mainForm?.ApplicationNo || '',
+        Applicant_Name: mainForm?.ApplicantName || '',
         Date: receipt.Date.toISOString().split('T')[0],
         FileNo: mainForm?.FileNo || '',
-        ReceivedAmount: receipt.ReceivedAmount,
-        ModeOfPayment: receipt.ModeOfPayment,
-        ReceiptNo: receipt.ReceiptNo,
-        AgentName: receipt.AgentName,
+        Received_Amount: receipt.ReceivedAmount,
+        Mode_Of_Payment: receipt.ModeOfPayment,
+        Receipt_No: receipt.ReceiptNo,
+        Agent_Name: receipt.AgentName,
       };
     });
 

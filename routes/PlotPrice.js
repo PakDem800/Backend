@@ -25,8 +25,15 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     const PlotPrices = allPricePlots.map(item => ({
-      ...item,
-      PriceDate: item.PriceDate.toISOString().split('T')[0],
+      PlotPriceID:item.PlotPriceID,
+      Plot_Category:item.PlotCategory,
+      Plot_Size:item.PlotSize,
+      Price_Date: item.PriceDate.toISOString().split('T')[0],
+      Plot_Price:item.PlotPrice,
+      Monthly_Installment:item.MonthlyInstallment,
+      Total_Monthly_Installments:item.TotalMonthlyInstallments,
+      Extra_15_Percent:item.Extra15Percent,
+      
     }));
 
     // Serialize the BigInt values using json-bigint
@@ -54,17 +61,17 @@ router.get('/details',protect,isAdmin, async function (req, res, next) {
 
     PricePlot = {
       PlotPriceID: allPricePlots.PlotPriceID,
-      PlotCategory: allPricePlots.PlotCategory,
-      PlotSize: allPricePlots.PlotSize,
-      PriceDate: allPricePlots.PriceDate.toISOString().split('T')[0],
-      PlotPrice: allPricePlots.PlotPrice,
-      MonthlyInstallment: allPricePlots.MonthlyInstallment,
-      TotalMonthlyInstallments: allPricePlots.TotalMonthlyInstallments,
-      Extra15Percent: allPricePlots.Extra15Percent,
-      TokenMoney: allPricePlots.TokenMoney,
-      ConfirmationAdvance: allPricePlots.ConfirmationAdvance,
-      QuarterlyInstallment: allPricePlots.QuarterlyInstallment,
-      TotalInstallmentQuarterly: allPricePlots.TotalInstallmentQuarterly,
+      Plot_Category: allPricePlots.PlotCategory,
+      Plot_Size: allPricePlots.PlotSize,
+      Price_Date: allPricePlots.PriceDate.toISOString().split('T')[0],
+      Plot_Price: allPricePlots.PlotPrice,
+      Monthly_Installment: allPricePlots.MonthlyInstallment,
+      Total_Monthly_Installments: allPricePlots.TotalMonthlyInstallments,
+      Extra_15_Percent: allPricePlots.Extra15Percent,
+      Token_Money: allPricePlots.TokenMoney,
+      Confirmation_Advance: allPricePlots.ConfirmationAdvance,
+      Quarterly_Installment: allPricePlots.QuarterlyInstallment,
+      Total_Installment_Quarterly: allPricePlots.TotalInstallmentQuarterly,
     }
     
 
@@ -85,13 +92,8 @@ router.post('/createPlotPrice',protect,isAdmin, async function (req, res, next) 
     const {
       PlotCategory,
       PlotSize,
-      PriceDate,
       PlotPrice,
-      TokenMoney,
-      ConfirmationAdvance,
       MonthlyInstallment,
-      QuarterlyInstallment,
-      TotalInstallmentQuarterly,
       TotalMonthlyInstallments,
       Extra15Percent,
     } = req.body;
@@ -99,26 +101,17 @@ router.post('/createPlotPrice',protect,isAdmin, async function (req, res, next) 
     const data = {
       PlotCategory,
       PlotSize,
-      PriceDate : new Date(PriceDate),
-      PlotPrice,
-      TokenMoney,
-      ConfirmationAdvance,
-      MonthlyInstallment,
-      QuarterlyInstallment,
-      TotalInstallmentQuarterly,
-      TotalMonthlyInstallments,
-      Extra15Percent,
+      PriceDate :   new Date(),
+      PlotPrice : parseInt(PlotPrice),
+      MonthlyInstallment : parseInt(MonthlyInstallment),
+      TotalMonthlyInstallments : parseInt(TotalMonthlyInstallments),
+      Extra15Percent : parseInt(Extra15Percent),
     };
 
-    console.log(data);
-
-    // Now you can use 'data' to create a new PlotPrice record in the database.
-    // For example, using Prisma:
     const newPlotPrice = await prisma.plotPrice.create({
       data: data,
     });
 
-    console.log(newPlotPrice);
     const serializednewPlotPrice = jsonSerializer.stringify(newPlotPrice);
 
     res.status(200).json(serializednewPlotPrice);
@@ -136,15 +129,11 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
       PlotPriceID ,
       PlotCategory,
       PlotSize,
-      PriceDate,
       PlotPrice,
-      TokenMoney,
-      ConfirmationAdvance,
       MonthlyInstallment,
-      QuarterlyInstallment,
-      TotalInstallmentQuarterly,
       TotalMonthlyInstallments,
-      Extra15Percent } = req.body
+      Extra15Percent
+     } = req.body
 
     const allPricePlots = await prisma.plotPrice.update({
       where:{
@@ -153,15 +142,11 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
       data : {
         PlotCategory,
         PlotSize,
-        PriceDate : new Date(PriceDate),
-        PlotPrice,
-        TokenMoney,
-        ConfirmationAdvance,
-        MonthlyInstallment,
-        QuarterlyInstallment,
-        TotalInstallmentQuarterly,
-        TotalMonthlyInstallments,
-        Extra15Percent
+        PriceDate :   new Date(),
+        PlotPrice : parseInt(PlotPrice),
+        MonthlyInstallment : parseInt(MonthlyInstallment),
+        TotalMonthlyInstallments : parseInt(TotalMonthlyInstallments),
+        Extra15Percent : parseInt(Extra15Percent),
       }
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
@@ -180,7 +165,7 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
 router.delete('/delete',protect,isAdmin, async function (req, res, next) {
   try {
 
-    const  { PlotPriceID  } = req.body
+    const  { PlotPriceID  } = req.query
 
     const allPricePlots = await prisma.plotPrice.delete({
       where:{
@@ -189,7 +174,7 @@ router.delete('/delete',protect,isAdmin, async function (req, res, next) {
     });
     res.status(200).json({
       success: true,
-      message: `Plot Price with PlotPriceID ${PlotPriceID} has been deleted successfully.`
+      message: `Plot Price has been deleted successfully.`
     });
   } catch (error) {
     console.error(error);

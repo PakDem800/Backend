@@ -32,9 +32,26 @@ router.get('/',protect, isAdmin,async function (req, res, next) {
             PlotCategory: true,
           },
         });
+
+        const forms = mainForms.map((form) => {
+          return {
+            Date: form.Date,
+            File_No: form.FileNo,
+            File_Type: form.FileType,
+            Plot_No: form.PlotNo,
+            Phase: form.Phase,
+            Block: form.Block,
+            Plot_Location: form.PlotLocation,
+            Applicant_Name: form.ApplicantName,
+            Total_Amount: form.TotalAmount,
+            Agent: form.Agent,
+            Plot_Category: form.PlotCategory,
+          }
+
+        })
   
     const jsonSerializer = JSONbig({ storeAsString: true });
-    const serializedMainForms = jsonSerializer.stringify(mainForms);
+    const serializedMainForms = jsonSerializer.stringify(forms);
     res.send(serializedMainForms);
   } catch (error) {
     console.error(error);

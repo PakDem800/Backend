@@ -19,12 +19,13 @@ router.get('/',protect,ExpenditureAuthorization, async function (req, res, next)
     const {startDate , endDate} = req.query
 
     if (!startDate || !endDate) {
-      return res.status(400).send('Both start date and end date are required.');
+      var startDateObj = new Date()
+      var endDateObj = new Date()
     }
-
-    // Convert the start and end dates to JavaScript Date objects
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
+    else{
+    var startDateObj = new Date(startDate);
+    var endDateObj = new Date(endDate);
+    }
 
     // Prisma query to retrieve expenditure records within the specified date range
     const allreceipt = await prisma.expenditureTbl.findMany({
@@ -58,28 +59,28 @@ router.get('/',protect,ExpenditureAuthorization, async function (req, res, next)
         const { ExpenseSubHead, ExpenseNature } = item.ExpenseHeadsTbls;
         return {
           id: item.ExpenditureID,
-          ExpenseSubHead,
-          ExpenseNature, 
-          ExpDate: item.ExpDate.toISOString().split('T')[0],
+          Expense_Sub_Head : ExpenseSubHead,
+          Expense_Nature : ExpenseNature, 
+          Exp_Date: item.ExpDate.toISOString().split('T')[0],
           Amount: item.Amount,
           Remarks: item.Remarks,
-          ExpenditureNature: item.ExpenditureNature,
-          PVNo: item.PVNo,
-          ModeOfPayment: item.ModeOfPayment,
-          ToPayee: item.ToPayee,
+          Expenditure_Nature: item.ExpenditureNature,
+          PV_No: item.PVNo,
+          Mode_Of_Payment: item.ModeOfPayment,
+          To_Payee: item.ToPayee,
           
         };
       }
       else {
         return {
           id: item.ExpenditureID, 
-          ExpDate: item.ExpDate.toISOString().split('T')[0],
+          Exp_Date: item.ExpDate.toISOString().split('T')[0],
           Amount: item.Amount,
           Remarks: item.Remarks,
-          ExpenditureNature: item.ExpenditureNature,
-          PVNo: item.PVNo,
-          ModeOfPayment: item.ModeOfPayment,
-          ToPayee: item.ToPayee,
+          Expenditure_Nature: item.ExpenditureNature,
+          PV_No: item.PVNo,
+          Mode_Of_Payment: item.ModeOfPayment,
+          To_Payee: item.ToPayee,
         };
       }
     
@@ -133,8 +134,8 @@ router.post('/createExpenditure',protect,ExpenditureAuthorization, async functio
     // Now, create the ExpenditureTbl record with the ExpenseID
     const newExpenditure = await prisma.expenditureTbl.create({
       data: {
-        ExpDate : new Date(ExpDate),
-        Amount,
+        ExpDate : ExpDate ?  new Date(ExpDate) : new Date(),
+        Amount : parseInt(Amount),
         Remarks,
         ExpenditureNature,
         PVNo,
@@ -142,7 +143,7 @@ router.post('/createExpenditure',protect,ExpenditureAuthorization, async functio
         ToPayee,
         PayeeCNICNo,
         MobileNo,
-        ExpenseID,
+        ExpenseID : parseInt(ExpenseID),
       },
     });
 
@@ -189,14 +190,14 @@ router.get('/details',protect,ExpenditureAuthorization, async function (req, res
     });
 
     const expenditure = {
-      ExpenditureID: receipt.ExpenditureID,
-      ExpDate: receipt.ExpDate.toISOString().split('T')[0],
+      Expenditure_ID: receipt.ExpenditureID,
+      Exp_Date: receipt.ExpDate.toISOString().split('T')[0],
       Amount: receipt.Amount,
       Remarks: receipt.Remarks,
-      ExpenditureNature: receipt.ExpenditureNature,
-      PVNo: receipt.PVNo,
-      ModeOfPayment: receipt.ModeOfPayment,
-      ToPayee: receipt.ToPayee,
+      Expenditure_Nature: receipt.ExpenditureNature,
+      PV_No: receipt.PVNo,
+      Mode_Of_Payment: receipt.ModeOfPayment,
+      To_Payee: receipt.ToPayee,
       // Conditional check to include properties from ExpenseHeadsTbls only if it's not null
       ...(receipt.ExpenseHeadsTbls !== null ? receipt.ExpenseHeadsTbls : {}),
     };

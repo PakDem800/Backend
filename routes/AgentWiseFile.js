@@ -38,7 +38,7 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
         ApplicationNo: mainForm.ApplicationNo,
         Date: mainForm.Date?.toISOString().split('T')[0],
         File: mainForm.FileNo,
-        ApplicantName: mainForm.ApplicantName,
+        Applicant_Name: mainForm.ApplicantName,
         Plot_Size: mainForm.Area,
         Plot: mainForm.PlotNo,
         Total_Amount: mainForm.TotalAmount,
