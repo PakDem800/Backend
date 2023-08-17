@@ -29,9 +29,9 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
       return {
         PlotAllotmentID: plot.PlotAllotmentID,
         Plots:plot.PlotsTbl.Plots,
-        AllotmentDate:plot.AllotmentDate.toISOString().split('T')[0],
-        AllotmentTime:plot.AllotmentTime.toISOString().split('T')[1],
-        FileNo:plot.FileNo,
+        Allotment_Date:plot.AllotmentDate.toISOString().split('T')[0],
+        Allotment_Time:plot.AllotmentTime.toISOString().split('T')[1].split('.')[0],
+        File_No:plot.FileNo,
         
       }
   
@@ -65,9 +65,9 @@ router.get('/details', protect,isAdmin, async function (req, res, next) {
 
     const PlotAllotment = {
       PlotAllotmentID: allPlots.PlotAllotmentID,
-      AllotmentDate:allPlots.AllotmentDate.toISOString().split('T')[0],
-      AllotmentTime:allPlots.AllotmentTime.toISOString().split('T')[1],
-      FileNo:allPlots.FileNo,
+      Allotment_Date:allPlots.AllotmentDate.toISOString().split('T')[0],
+      Allotment_Time:allPlots.AllotmentTime.toISOString().split('T')[1].split('.')[0],
+      File_No:allPlots.FileNo,
     }
 
     // Serialize the BigInt values using json-bigint

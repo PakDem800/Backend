@@ -19,10 +19,20 @@ router.get('/',protect, isAdmin,async function (req, res, next) {
 
       }
     });
+
+    const Plots = allPlots.map((Plot)=>{
+        return {
+          PlotID:Plot.PlotID,
+          Plots:Plot.Plots,
+          PlotNo:Plot.PlotNo,
+          Block:Plot.Block,
+          sold:Plot.sold
+        }
+    })
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const serializedPlots = jsonSerializer.stringify(Plots);
 
     res.send(serializedPlots);
   } catch (error) {
@@ -44,8 +54,32 @@ router.get('/details',protect,isAdmin, async function (req, res, next) {
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
-    // Serialize the BigInt values using json-bigint
-    const serializedPlots = jsonSerializer.stringify(allPlots);
+    const Plot = {
+      
+        PlotID: allPlots.PlotID,
+        ProjectID: allPlots.ProjectID,
+        PlotPrice: allPlots.PlotPrice,
+        PlotNo: allPlots.PlotNo,
+        Plots: allPlots.Plots,
+        PlotSize: allPlots.PlotSize,
+        Street: allPlots.Street,
+        Phase: allPlots.Phase,
+        Block: allPlots.Block,
+        Category: allPlots.Category,
+        PlotLocation: allPlots.PlotLocation,
+        Amount: allPlots.Amount,
+        PlotStatus: allPlots.PlotStatus,
+        sold: allPlots.sold ? "yes" : "no",
+        TokenMoney: allPlots.TokenMoney,
+        CornfirmationAdvance: allPlots.CornfirmationAdvance,
+        MonthlyInstallment: allPlots.MonthlyInstallment,
+        QuarterlyInstallment: allPlots.QuarterlyInstallment,
+        Extra15Percent: allPlots.Extra15Percent,
+        TotalQuarterlyInstallment: allPlots.TotalQuarterlyInstallment,
+        TotalMonthlyInstallment: allPlots.TotalMonthlyInstallment
+      
+    }
+    const serializedPlots = jsonSerializer.stringify(Plot);
 
     res.send(serializedPlots);
   } catch (error) {
@@ -73,19 +107,12 @@ router.post('/createPlot',protect,isAdmin, async function (req, res, next) {
       Amount,
       PlotStatus,
       sold,
-      TokenMoney,
-      CornfirmationAdvance,
-      MonthlyInstallment,
-      QuarterlyInstallment,
-      Extra15Percent,
-      TotalQuarterlyInstallment,
-      TotalMonthlyInstallment,
     } = req.body;
 
     const data = {
       ProjectID,
-      PlotPrice,
-      PlotNo,
+      PlotPrice : parseInt(PlotPrice),
+      PlotNo : parseInt(PlotNo),
       Plots,
       PlotSize,
       Street,
@@ -93,21 +120,13 @@ router.post('/createPlot',protect,isAdmin, async function (req, res, next) {
       Block,
       Category,
       PlotLocation,
-      Amount,
+      Amount : parseInt(Amount),
       PlotStatus,
       sold,
-      TokenMoney,
-      CornfirmationAdvance,
-      MonthlyInstallment,
-      QuarterlyInstallment,
-      Extra15Percent,
-      TotalQuarterlyInstallment,
-      TotalMonthlyInstallment,
+
     };
 
-    console.log(data);
 
-   
     const newPlot = await prisma.plotsTbl.create({
       data: data,
     });
@@ -140,14 +159,7 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
       PlotLocation,
       Amount,
       PlotStatus,
-      sold,
-      TokenMoney,
-      CornfirmationAdvance,
-      MonthlyInstallment,
-      QuarterlyInstallment,
-      Extra15Percent,
-      TotalQuarterlyInstallment,
-      TotalMonthlyInstallment 
+      sold, 
         } = req.body
 
     const UpdatedPlot = await prisma.plotsTbl.update({
@@ -155,26 +167,19 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
         PlotID : parseInt(PlotID)
       },
       data: {
-      ProjectID,
-      PlotPrice,
-      PlotNo,
-      Plots,
-      PlotSize,
-      Street,
-      Phase,
-      Block,
-      Category,
-      PlotLocation,
-      Amount,
-      PlotStatus,
-      sold,
-      TokenMoney,
-      CornfirmationAdvance,
-      MonthlyInstallment,
-      QuarterlyInstallment,
-      Extra15Percent,
-      TotalQuarterlyInstallment,
-      TotalMonthlyInstallment 
+        ProjectID,
+        PlotPrice : parseInt(PlotPrice),
+        PlotNo : parseInt(PlotNo),
+        Plots,
+        PlotSize,
+        Street,
+        Phase,
+        Block,
+        Category,
+        PlotLocation,
+        Amount : parseInt(Amount),
+        PlotStatus,
+        sold,
       }
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
@@ -193,7 +198,7 @@ router.put('/update',protect,isAdmin, async function (req, res, next) {
 router.delete('/delete',protect,isAdmin, async function (req, res, next) {
   try {
 
-    const  { PlotID  } = req.body
+    const  { PlotID  } = req.query
 
     const allPricePlots = await prisma.plotsTbl.delete({
       where:{
@@ -202,7 +207,7 @@ router.delete('/delete',protect,isAdmin, async function (req, res, next) {
     });
     res.status(200).json({
       success: true,
-      message: `Plot Price with PlotID ${PlotID} has been deleted successfully.`
+      message: `Plot details are deleted successfully.`
     });
   } catch (error) {
     console.error(error);

@@ -30,8 +30,16 @@ router.get('/regularReceipt',protect, async function (req, res, next) {
       }
     });
     const MainAppForm = allMainForm.map(item => ({
-      ...item,
-      Date: item.Date.toISOString().split('T')[0],
+      Id:item.Id,
+      File_No : item.FileNo,
+        Date: item.Date.toISOString().split('T')[0],
+        Received_Amount : item.ReceivedAmount,
+        Received_From:item.ReceivedFrom,
+        Amount_For_The_Month_Of : item.Amount_For_The_Month_Of,
+        Receipt:item.Receipt,
+        Plot_No:item.Plot_No,
+        Remarks:item.Remarks,
+  
     }));
 
     const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
@@ -67,8 +75,15 @@ router.get('/transferReceipt',protect, async function (req, res, next) {
       }
     });
     const MainAppForm = allMainForm.map(item => ({
-      ...item,
-      Date: item.Date.toISOString().split('T')[0],
+      Id:item.Id,
+      File_No : item.FileNo,
+        Date: item.Date.toISOString().split('T')[0],
+        Received_Amount : item.ReceivedAmount,
+        Received_From:item.ReceivedFrom,
+        Amount_For_The_Month_Of : item.Amount_For_The_Month_Of,
+        Receipt:item.Receipt,
+        Plot_No:item.Plot_No,
+        Remarks:item.Remarks,
     }));
 
     const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
@@ -102,8 +117,15 @@ router.get('/DevelopmentReceipt',protect, async function (req, res, next) {
       }
     });
     const MainAppForm = allMainForm.map(item => ({
-      ...item,
-      Date: item.Date.toISOString().split('T')[0],
+      Id:item.Id,
+      File_No : item.FileNo,
+        Date: item.Date.toISOString().split('T')[0],
+        Received_Amount : item.ReceivedAmount,
+        Received_From:item.ReceivedFrom,
+        Amount_For_The_Month_Of : item.Amount_For_The_Month_Of,
+        Receipt:item.Receipt,
+        Plot_No:item.Plot_No,
+        Remarks:item.Remarks,
     }));
 
     const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
@@ -119,7 +141,35 @@ router.get('/DevelopmentReceipt',protect, async function (req, res, next) {
 //Edit Receipt
 router.put('/update', protect,isAdmin, async function (req, res, next) {
   try {
-    const receiptId = req.body.receiptId; 
+    
+    const {
+      UserID,
+      receiptId,
+      ReceiptNo,
+      FileNo,
+      date,
+      ReceivedAmount,
+      ReceivedDifferenceAmount,
+      ReceivedFrom,
+      Amount_For_The_Month_Of,
+      AmountReceivedForPlot,
+      ModeOfPayment,
+      Phase,
+      Block,
+      Plot_No,
+      Prepaired_By,
+      Prepaired_by_Name,
+      Remarks,
+      Balancamount,
+      ReceiptCatgory,
+      ReceiptStatus,
+      NextDueDate,
+      AgentID,
+      AgentName,
+      CommAmount,
+      CommRemarks,
+      ReceiptType, 
+    } = req.body;
 
     if (isNaN(receiptId)) {
       return res.status(400).json({
@@ -135,35 +185,49 @@ router.put('/update', protect,isAdmin, async function (req, res, next) {
         Id: Id,
       },
       data: {
-        ReceiptNo: req.body.ReceiptNo,
-        FileNo: req.body.FileNo,
-        Date: new Date(req.body.date),
-        ReceivedAmount: req.body.ReceivedAmount,
-        ReceivedDifferenceAmount: req.body.ReceivedDifferenceAmount,
-        ReceivedFrom: req.body.ReceivedFrom,
-        Amount_For_The_Month_Of: req.body.Amount_For_The_Month_Of,
-        AmountReceivedForPlot: req.body.AmountReceivedForPlot,
-        ModeOfPayment: req.body.ModeOfPayment,
-        Receipt: req.body.Receipt,
-        Phase: req.body.Phase,
-        Block: req.body.Block,
-        Plot_No: req.body.Plot_No,
-        Prepaired_By: req.body.Prepaired_By,
-        Prepaired_by_Name: req.body.Prepaired_by_Name,
-        Remarks: req.body.Remarks,
-        Balancamount: req.body.Balancamount,
-        ReceiptCatgory: req.body.ReceiptCatgory,
-        ReceiptStatus: req.body.ReceiptStatus,
-        NextDueDate: new Date(req.body.NextDueDate),
-        AgentID: req.body.AgentID,
-        AgentName: req.body.AgentName,
-        CommAmount: req.body.CommAmount,
-        CommRemarks: req.body.CommRemarks,
-        ReceiptType: req.body.receiptType
+        ReceiptNo : parseInt(ReceiptNo),
+        FileNo,
+        Date : date ? new Date(date) : new Date(),
+        ReceivedAmount : parseInt(ReceivedAmount),
+        ReceivedDifferenceAmount ,
+        ReceivedFrom,
+        Amount_For_The_Month_Of,
+        AmountReceivedForPlot,
+        ModeOfPayment,
+        Receipt : parseInt(ReceiptNo),
+        Phase,
+        Block,
+        Plot_No,
+        Prepaired_By : parseInt(Prepaired_By),
+        Prepaired_by_Name,
+        Remarks,
+        Balancamount,
+        ReceiptCatgory,
+        ReceiptStatus,
+        NextDueDate : NextDueDate ? new Date(NextDueDate) : null,
+        AgentID : parseInt(AgentID),
+        AgentName,
+        CommAmount : parseFloat(CommAmount),
+        CommRemarks,
+        ReceiptType : parseInt(ReceiptType), 
       },
     });
 
     const serializedupdatedRecord = jsonSerializer.stringify(updatedRecord);
+
+    
+    const userActivity = await prisma.testtable.create({
+      data:{
+        ApplicationNo : parseInt(ReceiptNo),
+        Applicant_Name : 'updated',
+        Agent : UserID , 
+        Date : new Date(),
+        Receivied_Amount : 1,
+        Mode_Of_Payment : 'no',
+        Receipt : updatedRecord.Id,
+        File_No : updatedRecord.FileNo
+      }
+    })
 
     res.status(200).json({
       success: true,
@@ -236,8 +300,6 @@ router.get('/details',protect, async function (req, res, next) {
 
     const Id = parseInt(receiptId);
 
-    console.log(typeof(Id));
-
     // Use Prisma client to delete the record
     const Record = await prisma.receiptTbl.findFirst({
       where: {
@@ -245,7 +307,36 @@ router.get('/details',protect, async function (req, res, next) {
       },
     });
 
-    const serializedRecord = jsonSerializer.stringify(Record);
+    const receipt = {
+        Id : Record.Id, 
+        Receipt_No: Record.ReceiptNo,
+        File_No: Record.FileNo,
+        Date: Record.Date?.toISOString().split('T')[0],
+        Received_Amount: Record.ReceivedAmount,
+        Received_Difference_Amount: Record.ReceivedDifferenceAmount,
+        Received_From: Record.ReceivedFrom,
+        Amount_For_The_Month_Of: Record.Amount_For_The_Month_Of,
+        Amount_Received_For_Plot: Record.AmountReceivedForPlot,
+        Mode_Of_Payment: Record.ModeOfPayment,
+        Receipt: Record.Receipt,
+        Phase: Record.Phase,
+        Block: Record.Block,
+        Plot_No: Record.Plot_No,
+        Prepaired_By: Record.Prepaired_By,
+        Prepaired_by_Name: Record.Prepaired_by_Name,
+        Remarks: Record.Remarks,
+        Balance_Amount: Record.Balancamount,
+        Receipt_Catgory: Record.ReceiptCatgory,
+        Receipt_Status: Record.ReceiptStatus,
+        Next_Due_Date: Record.NextDueDate?.toISOString().split('T')[0],
+        Agent_Name: Record.AgentName,
+        Commission_Amount: Record.CommAmount,
+        Commission_Remarks: Record.CommRemarks,
+        Receipt_Type: Record.ReceiptType,
+        Agent_ID : Record.AgentID
+    }
+
+    const serializedRecord = jsonSerializer.stringify(receipt);
 
     res.send(serializedRecord)
   } catch (error) {
@@ -276,8 +367,10 @@ router.get('/receipt',protect, async function(req,res,next){
 //receipt record finder
 router.post('/createReceipt',protect, async function (req, res, next) {
   try {
+    
+
     const {
-      ReceiptNo,
+      UserID,
       FileNo,
       date,
       ReceivedAmount,
@@ -304,40 +397,59 @@ router.post('/createReceipt',protect, async function (req, res, next) {
       ReceiptType, 
     } = req.body;
 
+    const mainForm = await prisma.mainAppForm.findFirst({
+      where :{
+        FileNo : FileNo
+      }
+    })
+
     const data = {
-      ReceiptNo,
+      ReceiptNo : parseInt(mainForm.ApplicationNo),
       FileNo,
-      Date : new Date(date),
-      ReceivedAmount,
-      ReceivedDifferenceAmount,
+      Date : date ? new Date(date) : new Date(),
+      ReceivedAmount : parseInt(ReceivedAmount),
+      ReceivedDifferenceAmount ,
       ReceivedFrom,
       Amount_For_The_Month_Of,
       AmountReceivedForPlot,
       ModeOfPayment,
-      Receipt,
+      Receipt : parseInt(mainForm.ApplicationNo),
       Phase,
       Block,
       Plot_No,
-      Prepaired_By,
+      Prepaired_By : parseInt(Prepaired_By),
       Prepaired_by_Name,
       Remarks,
       Balancamount,
       ReceiptCatgory,
       ReceiptStatus,
-      NextDueDate : new Date(NextDueDate),
-      AgentID,
+      NextDueDate : NextDueDate ? new Date(NextDueDate) : null,
+      AgentID : parseInt(AgentID),
       AgentName,
-      CommAmount,
+      CommAmount : parseFloat(CommAmount),
       CommRemarks,
-      ReceiptType, 
+      ReceiptType : parseInt(ReceiptType), 
     };
 
-    console.log(data);
+
 
     const newReceipt = await prisma.receiptTbl.create({
       data: data,
     });
-    console.log(newReceipt);
+
+    const userActivity = await prisma.testtable.create({
+      data:{
+        ApplicationNo : mainForm.ApplicationNo,
+        Applicant_Name : 'Created',
+        Agent : UserID , 
+        Date : new Date(),
+        Receivied_Amount : 1,
+        Mode_Of_Payment : 'no',
+        Receipt : newReceipt.Id,
+        File_No : newReceipt.FileNo
+      }
+    })
+
     const serializednewReceipt = jsonSerializer.stringify(newReceipt);
 
     res.status(200).json(serializednewReceipt);

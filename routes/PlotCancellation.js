@@ -29,10 +29,10 @@ router.get('/', protect,isAdmin,async function (req, res, next) {
   
         return {
           PlotCancelID : allPlot.PlotCancelID,
-          CancellationDate : allPlot.CancellationDate.toISOString().split('T')[0],
-          AmountNotPaid : allPlot.AmountNotPaid,
-          ReasonForCancellation : allPlot.ReasonForCancellation,
-          FileNo : File.FileNo
+          Cancellation_Date : allPlot.CancellationDate.toISOString().split('T')[0],
+          Amount_Not_Paid : allPlot.AmountNotPaid,
+          Reason_For_Cancellation : allPlot.ReasonForCancellation,
+          File_No : File.FileNo
         
         };
       });
@@ -72,10 +72,10 @@ router.get('/details', async function (req, res, next) {
 
     const plotDetails = {
       PlotCancelID : allPlots.PlotCancelID,
-      CancellationDate : allPlots.CancellationDate.toISOString().split('T')[0],
-      AmountNotPaid : allPlots.AmountNotPaid,
-      ReasonForCancellation : allPlots.ReasonForCancellation,
-      FileNo : mainAppForm.FileNo
+      Cancellation_Date : allPlots.CancellationDate.toISOString().split('T')[0],
+      Amount_Not_Paid : allPlots.AmountNotPaid,
+      Reason_For_Cancellation : allPlots.ReasonForCancellation,
+      File_No : mainAppForm.FileNo
     }
 
     // Serialize the BigInt values using json-bigint

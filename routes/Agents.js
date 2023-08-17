@@ -68,8 +68,26 @@ router.get('/details',protect,isAdmin, async function (req, res, next) {
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    const Agent = {
+      Agent_ID : allAgents.AgentID,
+      Registration_Date : allAgents.RegistrationDate.toISOString().split('T')[0],
+      Agent_Name : allAgents.AgentName,
+      Agent_CNIC_No : allAgents.AgentCNICNo,
+      Agent_Father_Name :  allAgents.AgentFatherName,
+      Company_Name : allAgents.CompanyName,
+      Company_Address : allAgents.CompanyAddress,
+      Office_No : allAgents.OfficeNo,
+      Phone : allAgents.Phone,
+      Email : allAgents.Email,
+      Commission_Percentage : allAgents.CommissionPercentage,
+      Down_Payment_Commission : allAgents.DownPaymentCommission,
+      Installment_Commission : allAgents.InstallmentCommission,
+      Opening_Balance : allAgents.OpeningBalance,
+      Opening_Balance_Date :allAgents.OpeningBalanceDate?.toISOString().split('T')[0],
+    }
+
     // Serialize the BigInt values using json-bigint
-    const serializedallAgents = jsonSerializer.stringify(allAgents);
+    const serializedallAgents = jsonSerializer.stringify(Agent);
 
     res.send(serializedallAgents);
 

@@ -31,11 +31,11 @@ router.get('/', protect, async function (req, res, next) {
 
     const payments = paymentSchedule.map(item => ({
       PaymentScheduleID: item.PaymentScheduleID,
-      FileNo: item.FileNo,
-      ApplicantName: item.MainAppForm.ApplicantName,
+      File_No: item.FileNo,
+      Applicant_Name: item.MainAppForm.ApplicantName,
       Date: item.MainAppForm.Date.toISOString().split('T')[0],
-      MonthIyInstallement: item.MonthIyInstallement,
-      DueDate: item.DueDate.toISOString().split('T')[0],
+      MonthIy_Installement: item.MonthIyInstallement,
+      Due_Date: item.DueDate.toISOString().split('T')[0],
       
     }));
 

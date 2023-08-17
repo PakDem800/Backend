@@ -7,9 +7,13 @@ const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
 var {isAdmin, protect } = require('../middleware/authMiddleware')
 
-router.get('/',protect,isAdmin, async function (req, res, next) {
+router.get('/',protect, async function (req, res, next) {
   try {
-    const allregistrations = await prisma.registrationTbl.findMany();
+    const allregistrations = await prisma.registrationTbl.findMany({
+      where :{
+        RegistrationAs : 2
+      }
+    });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
