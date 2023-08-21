@@ -121,7 +121,7 @@ router.post('/createAgent',protect,isAdmin, async function (req, res, next) {
     } = req.body;
 
     const data = {
-      RegistrationDate : new Date(RegistrationDate),
+      RegistrationDate : RegistrationDate ? new Date(RegistrationDate) : new Date(),
       AgentName,
       AgentCNICNo,
       AgentFatherName,

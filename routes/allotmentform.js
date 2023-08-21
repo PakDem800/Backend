@@ -54,6 +54,111 @@ router.get('/mainform',protect, async function (req, res, next) {
 });
 
 
+router.get('/Cashmainform', protect, async function (req, res, next) {
+  try {
+    const allMainForm = await prisma.mainAppForm.findMany({
+      where: {
+        ModeOfPayment: 'cash'
+      },
+      select: {
+        ApplicationNo: true,
+        Date: true,
+        FileNo: true,
+        Area: true,
+        PlotNo: true,
+        ApplicantName: true,
+        ContactNo: true,
+        TotalAmount: true,
+        DownPayment: true
+      }
+    });
+
+    const MainAppForm = allMainForm.map(item => ({
+      ApplicationNo: item.ApplicationNo,
+      Date: item.Date.toISOString().split('T')[0],
+      File_No: item.FileNo,
+      Area: item.Area,
+      Plot_No: item.PlotNo,
+      Applicant_Name: item.ApplicantName,
+      Contact_No: item.ContactNo,
+      Total_Amount: item.TotalAmount,
+      Down_Payment: item.DownPayment
+    }));
+
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
+
+    res.send(serializedMainAppForm);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+router.get('/installmentFiles', protect, async function (req, res, next) {
+  try {
+    const allMainForm = await prisma.mainAppForm.findMany({
+      where: {
+        OR: [
+          { ModeOfPayment: 'installment' },
+          { ModeOfPayment: 'installments' }
+        ]
+      },
+      select: {
+        ApplicationNo: true,
+        Date: true,
+        FileNo: true,
+        Area: true,
+        PlotNo: true,
+        ApplicantName: true,
+        ContactNo: true,
+        TotalAmount: true,
+        DownPayment: true
+      }
+    });
+
+    const receiptData = await prisma.receiptTbl.findMany({
+      where: {
+        ReceiptNo: {
+          in: allMainForm.map(item => item.ApplicationNo)
+        }
+      },
+      select: {
+        ReceiptNo: true,
+        ReceivedAmount: true
+      }
+    });
+
+    const receiptSumMap = receiptData.reduce((acc, curr) => {
+      acc[curr.ReceiptNo] = BigInt(acc[curr.ReceiptNo] || 0) + BigInt(curr.ReceivedAmount || 0);
+      return acc;
+    }, {});
+
+    const MainAppFormWithShortfall = allMainForm.map(item => ({
+      ApplicationNo: item.ApplicationNo,
+      Date: item.Date.toISOString().split('T')[0],
+      File_No: item.FileNo,
+      Plot_No: item.PlotNo,
+      Applicant_Name: item.ApplicantName,
+      Contact_No: item.ContactNo,
+      Total_Amount: item.TotalAmount,
+      Down_Payment: item.DownPayment,
+      shortFall: BigInt(item.TotalAmount) - BigInt(item.DownPayment) - (receiptSumMap[item.ApplicationNo] || 0n)
+    }));
+
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppFormWithShortfall);
+
+    res.send(serializedMainAppForm);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
+
 router.get('/mainform/Files',protect, async function (req, res, next) {
   try {
     const allMainForm = await prisma.mainAppForm.findMany({
@@ -414,7 +519,7 @@ router.put('/mainform/update' ,protect,isAdmin,async function (req, res, next) {
 
   
     const updatedData = {
-      Date : new Date(date) ,
+      Date : date ? new Date(date) : new Date() ,
       FileNo,
       FileType,
       Area,
@@ -565,6 +670,141 @@ router.delete('/mainform/delete',protect,isAdmin , async function (req, res, nex
   }
 });
 
+/*              Transfer Amunt Router                       */
+
+router.put('/TransferFile' ,protect,async function (req, res, next) {
+  try {
+
+    
+    // Get the form data from the request body
+    const {
+      applicationNo,
+      ApplicantName,
+      FatherOrHusband,
+      CNICNo,
+      ContactNo,
+      Nok,
+      NokSRelation,
+      TransferAmount,
+      TransferDate,
+    
+      
+    } = req.body;
+
+  
+    const updatedData = {
+      ApplicantName,
+      FatherOrHusband,
+      CNICNo ,
+      ContactNo,
+      Nok,
+      NokSRelation,
+      TransferAmount : parseInt(TransferAmount),
+      TransferDate : TransferDate ? new Date(TransferDate) : new Date(),
+    };
+
+
+    const updatedForm = await prisma.mainAppForm.update({
+      where: {
+        ApplicationNo : parseInt(applicationNo),
+      },
+      data: updatedData,
+    });
+
+   return res.status(201).json("Successfully Created Transfered File");
+
+    // // Convert the response data to a JSON string
+    // const serializedResponseData = jsonSerializer.stringify(updatedForm);
+
+    
+
+    // return res
+    // .status(200)
+    // .json(serializedResponseData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error While Updating' });
+  }
+});
+
+router.get('/TransferFile',protect, async function (req, res, next) {
+  try {
+    const allMainForm = await prisma.mainAppForm.findMany({
+      where: {
+        TransferAmount: {
+          not: null
+        } },
+      select : {
+        ApplicationNo : true,
+        Date:true,
+        FileNo : true,
+        Area : true,
+        PlotNo : true,
+        ApplicantName : true,
+        ContactNo : true,
+        TotalAmount : true,
+        TransferDate : true
+        
+      }
+    });
+
+    const MainAppForm = allMainForm.map(item => ({
+        ApplicationNo : item.ApplicationNo,
+        Date:item.Date.toISOString().split('T')[0],
+        File_No : item.FileNo,
+        Area : item.Area,
+        Plot_No : item.PlotNo,
+        Applicant_Name : item.ApplicantName,
+        Contact_No : item.ContactNo,
+        Total_Amount : item.TotalAmount,
+        Transfer_Date : item.TransferDate?.toISOString().split('T')[0]
+      
+    }));
+    const serializedMainAppForm = jsonSerializer.stringify(MainAppForm);
+
+    res.send(serializedMainAppForm);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+router.get('/transfer/details', protect, async function (req, res, next) {
+  try {
+    const { FileNo } = req.query;
+
+    // Find the mainAppForm with the provided ApplicationNo in the database
+    const mainAppForm = await prisma.mainAppForm.findFirst({
+      where: {
+        FileNo: FileNo,
+      },
+    });
+
+    // If form not found, return error
+    if (!mainAppForm) {
+      return res.status(404).json({ error: 'Form not found' });
+    }
+
+
+   mainAppForm.Date =  mainAppForm.Date?.toISOString().split('T')[0]
+   mainAppForm.DevelopmentChargesDate =  mainAppForm.DevelopmentChargesDate?.toISOString().split('T')[0]
+   mainAppForm.TransferDate =  mainAppForm.TransferDate?.toISOString().split('T')[0]
+
+    
+
+    // Convert the response data to a JSON string
+    const serializedResponseData = jsonSerializer.stringify(mainAppForm);
+    
+    // Send the combined data as the response
+    res.send(serializedResponseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
 
 
 
@@ -608,10 +848,9 @@ router.post('/createRefund',protect, async function (req, res, next) {
     } = req.body;
 
     const data = {
-      ApplicationNo,
-      RefundDate ,
-      RefundAmount 
-       ,
+      ApplicationNo : parseInt(ApplicationNo),
+      RefundDate : RefundDate ? new Date(RefundDate) : new Date(),
+      RefundAmount : parseInt(RefundAmount),
       Installment ,
       ModeofPayment,
       Remarks ,

@@ -28,7 +28,7 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
     const AllotmentPlot =  allPlots.map((plot) => {
       return {
         PlotAllotmentID: plot.PlotAllotmentID,
-        Plots:plot.PlotsTbl.Plots,
+        Plots:plot.PlotsTbl?.Plots,
         Allotment_Date:plot.AllotmentDate.toISOString().split('T')[0],
         Allotment_Time:plot.AllotmentTime.toISOString().split('T')[1].split('.')[0],
         File_No:plot.FileNo,
@@ -85,18 +85,17 @@ router.post('/create',protect,isAdmin, async function (req, res, next) {
   try {
     const {
       AllotmentDate,
-      AllotmentTime,
-      FileNo,
-      PlotID,
-      IsActive,
+      FileNo
+
     } = req.body;
 
+
     const data = {
-      AllotmentDate : new Date(AllotmentDate),
-      AllotmentTime :new Date(AllotmentTime),
-      FileNo,
-      PlotID,
-      IsActive,
+      AllotmentDate : AllotmentDate ? new Date(AllotmentDate) : new Date(),
+      AllotmentTime : new Date(),
+      FileNo : parseInt(FileNo),
+      PlotID : null,
+      IsActive : true,
     };
 
     console.log(data);

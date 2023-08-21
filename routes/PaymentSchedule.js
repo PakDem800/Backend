@@ -39,6 +39,8 @@ router.get('/', protect, async function (req, res, next) {
       
     }));
 
+    
+
     // Serialize the BigInt values using json-bigint
     const jsonSerializer = JSONbig({ storeAsString: true });
     const serializedpaymentSchedule = jsonSerializer.stringify(payments);

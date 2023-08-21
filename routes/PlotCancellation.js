@@ -72,7 +72,7 @@ router.get('/details', async function (req, res, next) {
 
     const plotDetails = {
       PlotCancelID : allPlots.PlotCancelID,
-      Cancellation_Date : allPlots.CancellationDate.toISOString().split('T')[0],
+      Cancellation_Date : allPlots.CancellationDate?.toISOString().split('T')[0],
       Amount_Not_Paid : allPlots.AmountNotPaid,
       Reason_For_Cancellation : allPlots.ReasonForCancellation,
       File_No : mainAppForm.FileNo
@@ -99,9 +99,9 @@ router.post('/create',protect,isAdmin, async function (req, res, next) {
     } = req.body;
 
     const data = {
-      PlotID,
-      CancellationDate,
-      AmountNotPaid,
+      PlotID : parseInt(PlotID),
+      CancellationDate : CancellationDate ? new Date(CancellationDate) : new Date(),
+      AmountNotPaid : parseInt(AmountNotPaid),
       ReasonForCancellation,
     };
 
