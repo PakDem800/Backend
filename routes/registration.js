@@ -5,7 +5,8 @@ const JSONbig = require('json-bigint');
 
 const prisma = new PrismaClient();
 const jsonSerializer = JSONbig({ storeAsString: true });
-var {isAdmin, protect } = require('../middleware/authMiddleware')
+var {isAdmin, protect } = require('../middleware/authMiddleware');
+const { all } = require('./PlotPrice');
 
 router.get('/',protect, async function (req, res, next) {
   try {
@@ -16,8 +17,23 @@ router.get('/',protect, async function (req, res, next) {
     });
     const jsonSerializer = JSONbig({ storeAsString: true });
 
+    const registrations = allregistrations.map((reg) => {
+      return {
+        RegisterationID : reg.RegisterationID,
+        Registration_Date : reg.RegistrationDate?.toISOString().split('T')[0],
+        Name : reg.Name,
+        Company_Name : reg.CompanyName,
+        Company_Address : reg.CompanyAddress,
+        Office_No : reg.OfficeNo,
+        Contact_No : reg.ContactNo,
+        Email: reg.Email
+
+
+      }
+    })
+
     // Serialize the BigInt values using json-bigint
-    const serializedregistrations = jsonSerializer.stringify(allregistrations);
+    const serializedregistrations = jsonSerializer.stringify(registrations);
 
     res.send(serializedregistrations);
   } catch (error) {
@@ -30,17 +46,34 @@ router.get('/',protect, async function (req, res, next) {
 router.get('/details', protect,isAdmin,async function (req, res, next) {
   try {
 
-    const { RegisterationID  } =  req.body
+    const { RegisterationID  } =  req.query
 
     const allAgents = await prisma.registrationTbl.findFirst({
       where : {
         RegisterationID  : parseInt(RegisterationID )
       }
     });
+
+    const investor = {
+      Registeration_ID   :allAgents ? allAgents.RegisterationID    :"Not Found",
+      Name: allAgents.Name,
+      Registration_Date : allAgents.RegistrationDate?.toISOString().split('T')[0],
+      CNIC_No : allAgents.CNICNo,
+      Spouse_Name : allAgents.SpouseName,
+      Company_Name: allAgents.CompanyName,
+      Company_Address : allAgents.CompanyAddress,
+      Office_Phone_No: allAgents.OfficeNo ,
+      Contact_No : allAgents.ContactNo,
+      Email : allAgents.Email,
+      User_Name : allAgents.UserName,
+
+
+    }
+
     const jsonSerializer = JSONbig({ storeAsString: true });
 
     // Serialize the BigInt values using json-bigint
-    const serializedallAgents = jsonSerializer.stringify(allAgents);
+    const serializedallAgents = jsonSerializer.stringify(investor);
 
     res.send(serializedallAgents);
 
@@ -69,7 +102,7 @@ router.post('/createRegistration', protect,isAdmin,async function (req, res, nex
     } = req.body;
 
     const data = {
-      RegistrationDate : new Date(RegistrationDate),
+      RegistrationDate : RegistrationDate ? new Date(RegistrationDate) : new Date(),
       Name,
       CNICNo,
       SpouseName,
@@ -78,7 +111,7 @@ router.post('/createRegistration', protect,isAdmin,async function (req, res, nex
       OfficeNo,
       ContactNo,
       Email,
-      RegistrationAs,
+      RegistrationAs : RegistrationAs ? parseInt(RegistrationAs) : 2,
       UserName,
       Password,
     };
