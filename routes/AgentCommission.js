@@ -22,7 +22,9 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
         main.ApplicantName as Applicant_Name,
         main.TotalAmount as Total_Amount,
         main.CommissionPercentage as Commission_Percentage,
-        (main.TotalAmount * (CAST(agent.CommissionPercentage AS DECIMAL) / 100)) as Total_Commission,
+		main.GrandTotal as Down_Payment_Commission,
+		(main.DownPayment * (CAST(main.GrandTotal AS DECIMAL) / 100)) as Down_Payment_Paid,
+        (main.TotalAmount * (CAST(main.CommissionPercentage AS DECIMAL) / 100)) as Total_Commission,
 		  (Select Sum(r.CommAmount) from ReceiptTbl r where r.ReceiptNo = main.ApplicationNo) as Amount_Paid
       FROM
         MainAppForm main
@@ -32,18 +34,26 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
         agent.AgentName = ${agentName}
     `;
 
-    const commission = mainForms.map((mainForm) => {
-      return {
-        ApplicationNo : mainForm.ApplicationNo,
-        File_No : mainForm.File_No,
-        Applicant_Name : mainForm.Applicant_Name,
-        Total_Amount : mainForm.Total_Amount,
-        Commission_Percentage : mainForm.Commission_Percentage,
-        Total_Commission : mainForm.Total_Commission,
-        Amount_Paid : mainForm.Amount_Paid,
-        Balance : parseInt(mainForm.Total_Commission ? mainForm.Total_Commission : 0 - mainForm.Amount_Paid ? mainForm.Amount_Paid : 0)
-      }
-    })
+const commission = mainForms.map((mainForm) => {
+  const totalCommission = parseInt(mainForm.Total_Commission) || 0;
+  const amountPaid = parseInt(mainForm.Amount_Paid) || 0;
+  const downPaymentPaid = parseInt(mainForm.Down_Payment_Paid) || 0;
+  
+  const balance = parseInt(totalCommission - downPaymentPaid - amountPaid);
+
+  return {
+    ApplicationNo: mainForm.ApplicationNo,
+    File_No: mainForm.File_No,
+    Applicant_Name: mainForm.Applicant_Name,
+    Total_Amount: mainForm.Total_Amount,
+    Commission_Percentage: mainForm.Commission_Percentage,
+    Total_Commission: totalCommission,
+    Down_Payment_Paid: downPaymentPaid,
+    Amount_Paid: amountPaid,
+    Balance: balance
+  };
+});
+
 
     const jsonSerializer = JSONbig({ storeAsString: true });
     const serializedmainForms = jsonSerializer.stringify(commission);

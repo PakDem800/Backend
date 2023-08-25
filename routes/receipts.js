@@ -334,6 +334,11 @@ router.get('/details',protect, async function (req, res, next) {
         Commission_Remarks: Record.CommRemarks,
         Receipt_Type: Record.ReceiptType,
         Agent_ID : Record.AgentID
+        
+    }
+    if (Record.ModeOfPayment === 'Online') {
+      receipt.Online_Method = Record.Online_Method;
+      receipt.Payment_ID = Record.Method_ID;
     }
 
     const serializedRecord = jsonSerializer.stringify(receipt);
@@ -395,6 +400,8 @@ router.post('/createReceipt',protect, async function (req, res, next) {
       CommAmount,
       CommRemarks,
       ReceiptType, 
+      Online_Method,
+      Method_ID
     } = req.body;
 
     const mainForm = await prisma.mainAppForm.findFirst({
@@ -428,7 +435,9 @@ router.post('/createReceipt',protect, async function (req, res, next) {
       AgentName,
       CommAmount : parseFloat(CommAmount),
       CommRemarks,
-      ReceiptType : parseInt(ReceiptType), 
+      ReceiptType : parseInt(ReceiptType),
+      Online_Method,
+      Method_ID 
     };
 
 

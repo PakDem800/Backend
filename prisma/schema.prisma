@@ -88,9 +88,8 @@ model ExpenseHeadsTbls {
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model ledger_report {
-  Application_No             Int       @id @default(autoincrement())
+  Application_No             Int
   Date                       DateTime  @db.Date
   File_No                    String    @db.NVarChar(150)
   Area                       String    @db.NVarChar(150)
@@ -106,7 +105,7 @@ model ledger_report {
   Permanent_Address          String    @db.NVarChar(150)
   Postal_Address             String    @db.NVarChar(150)
   NOK                        String    @db.NVarChar(50)
-  S_O_W_O_D_O                String    @map("S/O,W/O,D/O") @db.NVarChar(50)
+  S_O_W_O_D_O                String    @map("[S/O,W/O,D/O") @db.NVarChar(50)
   NOK_Relation               String    @db.NVarChar(150)
   NOK_Address                String    @db.NVarChar(150)
   Referance                  String    @db.NVarChar(50)
@@ -141,7 +140,7 @@ model ledger_report {
   DevelopmentChargesDate     DateTime? @db.DateTime
   ReceiptCatgory             String?   @db.NVarChar(100)
 
- 
+  @@ignore
 }
 
 model MainAppForm {
@@ -203,6 +202,11 @@ model MainAppForm {
   DeductedAmount                          BigInt?
   InstallmentsForRefund                   Int?
   RefundAmount                            BigInt?
+  registry_Ineqal_Charges                 BigInt?
+  Registry_Date                           DateTime?                @db.DateTime
+  Registry_Number                         Int?
+  Inteqal_Number                          Int?
+  inteqal_date                            DateTime?                @db.DateTime
   AgentTbl_MainAppForm_InvestorToAgentTbl AgentTbl?                @relation("MainAppForm_InvestorToAgentTbl", fields: [Investor], references: [AgentID], onDelete: NoAction, onUpdate: NoAction, map: "FK_MainAppForm_AgentTbl")
   AgentTbl_MainAppForm_SubAgentToAgentTbl AgentTbl?                @relation("MainAppForm_SubAgentToAgentTbl", fields: [SubAgent], references: [AgentID], onDelete: NoAction, onUpdate: NoAction, map: "FK_MainAppForm_AgentTbl1")
   RegistrationTbl                         RegistrationTbl?         @relation(fields: [Investor], references: [RegisterationID], onDelete: NoAction, onUpdate: NoAction, map: "FK_MainAppForm_RegistrationTbl")
@@ -213,22 +217,17 @@ model MainAppForm {
   VoucherTbl                              VoucherTbl[]
 }
 
-
 model ModeOfPayment {
   ModeOfPaymentSerial Int     @id(map: "PK_ModeOfPayment")
   ModeOfPayment       String? @db.NVarChar(50)
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model MonthWiseReport {
-  id                    Int      @id @default(autoincrement())
   Date                  DateTime @db.Date
   Total_Received_Amount BigInt
   Office_Expence        BigInt
   Net_Amount            BigInt
-
-  
+  ReportID              Int      @id(map: "PK__MonthWis__D5BD48E5BBB89695") @default(autoincrement())
 }
 
 model PaymentSchedule {
@@ -337,6 +336,8 @@ model ReceiptTbl {
   CommAmount               Decimal?  @db.Decimal(18, 2)
   CommRemarks              String?   @db.NVarChar(100)
   ReceiptType              Int?
+  Online_Method            String?   @db.VarChar(50)
+  Method_ID                String?   @db.VarChar(50)
 }
 
 model RefrenceTbl {
@@ -363,19 +364,19 @@ model RegistrationRoles {
 }
 
 model RegistrationTbl {
-  RegisterationID                            Int           @id(map: "PK_RegistrationTbl") @default(autoincrement())
-  RegistrationDate                           DateTime?     @db.DateTime
-  Name                                       String?       @db.NVarChar(100)
-  CNICNo                                     String?       @db.NVarChar(100)
-  SpouseName                                 String?       @db.NVarChar(100)
-  CompanyName                                String?       @db.NVarChar(100)
-  CompanyAddress                             String?       @db.NVarChar(200)
-  OfficeNo                                   String?       @db.NVarChar(100)
-  ContactNo                                  String?       @db.NVarChar(100)
-  Email                                      String?       @db.NVarChar(100)
-  RegistrationAs                             Int?
-  UserName                                   String?       @db.NVarChar(100)
-  Password                                   String?       @db.NVarChar(100)
+  RegisterationID  Int           @id(map: "PK_RegistrationTbl") @default(autoincrement())
+  RegistrationDate DateTime?     @db.DateTime
+  Name             String?       @db.NVarChar(100)
+  CNICNo           String?       @db.NVarChar(100)
+  SpouseName       String?       @db.NVarChar(100)
+  CompanyName      String?       @db.NVarChar(100)
+  CompanyAddress   String?       @db.NVarChar(200)
+  OfficeNo         String?       @db.NVarChar(100)
+  ContactNo        String?       @db.NVarChar(100)
+  Email            String?       @db.NVarChar(100)
+  RegistrationAs   Int?
+  UserName         String?       @db.NVarChar(100)
+  Password         String?       @db.NVarChar(100)
   MainAppForm      MainAppForm[]
 }
 
@@ -395,11 +396,8 @@ model sysdiagrams {
   @@unique([principal_id, name], map: "UK_principal_name")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model testtable {
-  id               Int      @id @default(autoincrement())
-  ApplicationNo    Int    
+  ApplicationNo    Int
   Applicant_Name   String   @db.NVarChar(150)
   Date             DateTime @db.Date
   File_No          String   @db.NVarChar(150)
@@ -413,8 +411,7 @@ model testtable {
   AgentID          Int?
   AgentName        String?  @db.NVarChar(100)
   CommAmount       Decimal? @db.Decimal(18, 2)
-
- 
+  id               Int      @id(map: "PK_testtable") @default(autoincrement())
 }
 
 model UsersTbl {
