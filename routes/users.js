@@ -15,19 +15,16 @@ var { isAdmin,protect } = require('../middleware/authMiddleware')
 
 router.post('/createUser',protect,isAdmin,async function (req, res, next) {
   try {
-    const { UserName, Password, RolesID, LoginDateTime, IPAdderss } = req.body;
+    const { UserName, Password, RolesID } = req.body;
 
     const newUser = await prisma.usersTbl.create({
       data: {
         UserName,
         Password,
-        RolesID,
-        LoginDateTime,
-        IPAdderss,
+        RolesID : parseInt(RolesID),
       },
     });
 
-    console.log(newUser);
     res.status(200).json(newUser);
   } catch (error) {
     console.error(error);
@@ -67,6 +64,121 @@ router.post('/login', async function (req, res, next) {
 });
 
 
+router.get('/mainFormActivities',protect,isAdmin, async function (req, res, next) {
+  try {
+    let result = await  prisma.$queryRaw
+    `SELECT [id]
+      ,[Date]
+      ,[UsersTbl].UserName As Name
+      ,[Applicant_Name] As Action
+      ,[File_No]
+      ,[Agent] as ID
+      
+    FROM [pakdempk].[dbo].[testtable]
+    Join [pakdempk].[dbo].UsersTbl
+    on testtable.Agent = UsersTbl.UserID
+    where Receivied_Amount = 0
+    `;
+    
+
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+    const activities = result.map((res) => {
+      return {
+        id : res.id,
+        date : res.Date?.toISOString().split('T')[0],
+        Name : res.Name ,
+        Action : res.Action,
+        File_Number : res.File_No,
+        Id : parseInt(res.ID ),
+      };
+      
+    })
+
+    // Serialize the BigInt values using json-bigint
+    const serializedregistrations = jsonSerializer.stringify(activities);
+
+    return res.send(serializedregistrations);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/receiptActivities',protect,isAdmin, async function (req, res, next) {
+  try {
+    let result = await  prisma.$queryRaw
+    `SELECT [id]
+      ,[Date]
+      ,[UsersTbl].UserName As Name
+      ,[Applicant_Name] As Action
+      ,[File_No]
+      ,[Agent] as ID
+      
+    FROM [pakdempk].[dbo].[testtable]
+    Join [pakdempk].[dbo].UsersTbl
+    on testtable.Agent = UsersTbl.UserID
+    where Receivied_Amount = 1
+    `;
+    
+
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+    const activities = result.map((res) => {
+      return {
+        id : res.id,
+        date : res.Date?.toISOString().split('T')[0],
+        Name : res.Name ,
+        Action : res.Action,
+        File_Number : res.File_No,
+        Id : parseInt(res.ID ),
+      };
+      
+    })
+
+    // Serialize the BigInt values using json-bigint
+    const serializedregistrations = jsonSerializer.stringify(activities);
+
+    return res.send(serializedregistrations);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/Receipts',protect,isAdmin, async function (req, res, next) {
+  try {
+    const allregistrations = await prisma.registrationTbl.findMany({
+      where :{
+        RegistrationAs : 2
+      }
+    });
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+    const registrations = allregistrations.map((reg) => {
+      return {
+        RegisterationID : reg.RegisterationID,
+        Registration_Date : reg.RegistrationDate?.toISOString().split('T')[0],
+        Name : reg.Name,
+        Company_Name : reg.CompanyName,
+        Company_Address : reg.CompanyAddress,
+        Office_No : reg.OfficeNo,
+        Contact_No : reg.ContactNo,
+        Email: reg.Email
+
+
+      }
+    })
+
+    // Serialize the BigInt values using json-bigint
+    const serializedregistrations = jsonSerializer.stringify(registrations);
+
+    res.send(serializedregistrations);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 
 module.exports = router;

@@ -90,7 +90,7 @@ router.get('/', protect,ExpenditureAuthorization, async function (req, res, next
     };
 
 
-
+    console.log(result)
     const serializedallresult = jsonSerializer.stringify(result);
 
     res.send(serializedallresult);
@@ -99,5 +99,34 @@ router.get('/', protect,ExpenditureAuthorization, async function (req, res, next
     res.status(500).send('Internal Server Error');
   }
 });
+
+router.post('/Create', protect,ExpenditureAuthorization, async function (req, res, next) {
+  try {
+
+    const {
+      date,
+      Total_Received_Amount,
+      Office_Expence
+    } = req.body
+
+    const data = {
+      Date : date ? new Date(date) : new Date() ,
+      Office_Expence : parseInt(Office_Expence),
+      Net_Amount : parseInt(Total_Received_Amount) - parseInt(Office_Expence),
+      Total_Received_Amount : parseInt(Total_Received_Amount) ,
+    }
+
+    const monthReport = await prisma.monthWiseReport.create({
+      data : data
+    })
+
+    return res.status(200).send('Created')
+
+  } catch (error) {
+
+    return res.status(500).send('Internal Server Error');
+  }
+});
+
 
 module.exports = router;

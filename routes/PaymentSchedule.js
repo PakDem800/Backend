@@ -33,9 +33,9 @@ router.get('/', protect, async function (req, res, next) {
       PaymentScheduleID: item.PaymentScheduleID,
       File_No: item.FileNo,
       Applicant_Name: item.MainAppForm.ApplicantName,
-      Date: item.MainAppForm.Date.toISOString().split('T')[0],
+      Date: item.DueDate.toISOString().split('T')[0],
       MonthIy_Installement: item.MonthIyInstallement,
-      Due_Date: item.DueDate.toISOString().split('T')[0],
+      
       
     }));
 
