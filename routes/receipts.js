@@ -354,6 +354,80 @@ router.get('/details',protect, async function (req, res, next) {
 });
 
 
+router.get('/print',protect, async function (req, res, next) {
+  try {
+    const { receiptId } = req.query;
+
+    if (!receiptId) {
+      return res.status(400).json({
+        success: false,
+        message: 'receiptId is required in the request body.',
+      });
+    }
+
+    const Id = parseInt(receiptId);
+
+    // Use Prisma client to delete the record
+    const Record = await prisma.receiptTbl.findFirst({
+      where: {
+        Id: Id,
+      },
+    });
+
+    const result = await prisma.$queryRaw`
+    SELECT SUM(ReceivedAmount) As Total_Receieved
+  FROM [pakdempk].[dbo].[ReceiptTbl]
+  where ReceiptNo = ${Record.ReceiptNo}
+  group by ReceiptNo`;
+
+    const main = await prisma.mainAppForm.findFirst({
+      where:{
+        ApplicationNo : parseInt(Record.ReceiptNo)
+      }
+    })
+
+    const receipt = {
+        Receipt_No: Record.ReceiptNo,
+        Receipt_Status: Record.ReceiptStatus,
+        Amount_For_The_Month_Of: Record.Amount_For_The_Month_Of,
+        Payment_Mode: Record.ModeOfPayment,
+        File_No: main.FileNo,
+        Date: Record.Date?.toISOString().split('T')[0],
+        Received_Amount: Record.ReceivedAmount,
+        Name: main.ApplicantName,
+        Total_Recieved: result[0].Total_Receieved,
+        Mode_Of_Payment : main.ModeOfPayment,
+        Plot: main.PlotNo,
+        Phase: main.Phase,
+        Block: main.Block,
+        Area: main.Area,
+        Prepaired_By: Record.Prepaired_By,
+        Prepaired_by_Name: Record.Prepaired_by_Name,
+        Remarks: Record.Remarks,
+        Balance_Amount: main.TotalAmount  - result[0].Total_Receieved,
+        Total_Amount: main.TotalAmount,
+        PlotLocation : main.PlotLocation,
+        PlotCategory: main.PlotCategory
+        
+    }
+    if (Record.ModeOfPayment === 'Online') {
+      receipt.Online_Method = Record.Online_Method;
+      receipt.Payment_ID = Record.Method_ID;
+    }
+
+    const serializedRecord = jsonSerializer.stringify(receipt);
+
+    return res.send(serializedRecord)
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+});
+
+
 
 //all receipts
 router.get('/receipt',protect, async function(req,res,next){

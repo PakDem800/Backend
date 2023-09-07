@@ -35,6 +35,7 @@ var receiptRouter = require('./routes/receipts')
 var monthlyReportRouter = require('./routes/MonthlyReport')
 var UserRouter =  require('./routes/Users')
 var CustomerRouter = require('./routes/Customer')
+var authAgent = require('./routes/AgentAuth')
 
 var app = express();
 
@@ -78,6 +79,7 @@ app.use('/receipt',receiptRouter)
 app.use('/MonthlyReport' , monthlyReportRouter)
 app.use('/User', UserRouter)
 app.use('/Customer' , CustomerRouter)
+app.use('/AgentRecord',authAgent)
 
 
 // catch 404 and forward to error handler

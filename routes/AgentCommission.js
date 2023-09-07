@@ -35,6 +35,7 @@ router.get('/',protect,isAdmin, async function (req, res, next) {
     `;
 
 const commission = mainForms.map((mainForm) => {
+
   const totalCommission = parseInt(mainForm.Total_Commission) || 0;
   const amountPaid = parseInt(mainForm.Amount_Paid) || 0;
   const downPaymentPaid = parseInt(mainForm.Down_Payment_Paid) || 0;
@@ -49,6 +50,7 @@ const commission = mainForms.map((mainForm) => {
     Commission_Percentage: mainForm.Commission_Percentage,
     Total_Commission: totalCommission,
     Down_Payment_Paid: downPaymentPaid,
+    Down_Payment_Commission : mainForm.Down_Payment_Commission,
     Amount_Paid: amountPaid,
     Balance: balance
   };
