@@ -452,7 +452,7 @@ router.get('/mainform/details', protect, async function (req, res, next) {
       return res.status(404).json({ error: 'Form not found' });
     }
 
-   
+    
 
     // Find the latest date for the FileNo in the ReceiptTbl
     const latestReceiptDate = await prisma.receiptTbl.findFirst({
@@ -467,6 +467,8 @@ router.get('/mainform/details', protect, async function (req, res, next) {
       },
     });
 
+
+
     mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0]
     mainAppForm.DevelopmentChargesDate = mainAppForm.DevelopmentChargesDate?.toISOString().split('T')[0]
     mainAppForm.TransferDate = mainAppForm.TransferDate?.toISOString().split('T')[0]
@@ -479,11 +481,22 @@ router.get('/mainform/details', protect, async function (req, res, next) {
     const today = new Date();
     const latestDate = latestReceiptDate ? new Date(latestReceiptDate.Date) : null;
 
+    const result = await prisma.$queryRaw`
+      SELECT SUM(ReceivedAmount) As Total_Receieved
+    FROM [pakdempk].[dbo].[ReceiptTbl]
+    where ReceiptNo = ${ApplicationNo}
+    group by ReceiptNo`;
+
+
     let statusData = {};
 
-    if (!latestDate) {
+    if(result[0].Total_Receieved >= mainAppForm.TotalAmount ){
+      statusData = { status: 'Cleared' };
+    }
+    else if (!latestDate) {
       statusData = { status: 'active' };
-    } else {
+    } 
+    else {
       const monthDifference = (today.getFullYear() - latestDate.getFullYear()) * 12 +
         (today.getMonth() - latestDate.getMonth());
 
@@ -1042,7 +1055,7 @@ router.get('/refundSchedule',protect, async function(req,res,next){
           }
         })
         const serializedMainAppForm = jsonSerializer.stringify(refund);
-    
+        console.log(serializedMainAppForm)
         res.send(serializedMainAppForm);
       } catch (error) {
         console.error(error);
