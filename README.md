@@ -21,3 +21,5 @@ DATABASE_URL="SERVER://HOST:PORT;database;user;password;encrypt"
 
 For authentication and authorization:
 add SECRET_KEY in .env file
+SECRET_KEY=MyJWTSecretKey
+
