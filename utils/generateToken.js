@@ -4,7 +4,7 @@ var jwt = require('jsonwebtoken')
 
 const generateToken = (RoleId) => {
   return jwt.sign({ RoleId }, SECRET_KEY, {
-    expiresIn: '30d',
+    expiresIn: '1d',
   })
 }
 
