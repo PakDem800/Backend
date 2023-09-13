@@ -19,5 +19,9 @@ To run prisma after applying it functionality
 add .env file in root directory and write
 DATABASE_URL="SERVER://HOST:PORT;database;user;password;encrypt"
 
+
 For authentication and authorization:
 add SECRET_KEY in .env file
+as
+SECRET_KEY
+
