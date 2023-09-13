@@ -45,4 +45,4 @@ We welcome contributions to enhance the functionality and robustness of the PAKD
 
 Thank you for contributing to the PAKDEM Developers Portal project!
 
-For any questions or support, please reach out to our development team at [email@example.com](mailto:email@example.com).
+For any questions or support, please reach out to our development team at [PakDem](mailto:PakDem800@gmail.com).
