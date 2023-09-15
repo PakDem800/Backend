@@ -1,4 +1,4 @@
-![image](https://github.com/PakDem800/Backend/assets/139385935/54c67b9f-b9ae-4122-b746-7ae847adedb0)# PAKDEM Developers Portal - Backend
+#PAKDEM Developers Portal - Backend
 
 ## Overview
 Welcome to the backend of the PAKDEM Developers Portal. PAKDEM is a company specializing in providing plots for both housing and commercial purposes within the MMCB Society. This backend system includes a range of functionalities such as managing application files, generating receipts for each payment record, creating plots, and tracking office expenditures.
