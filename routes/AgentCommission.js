@@ -12,9 +12,6 @@ var { protect , isAdmin} = require('../middleware/authMiddleware')
 router.get('/',protect,isAdmin, async function (req, res, next) {
   try {
     const {agentName} = req.query;
-
-  
-
     const mainForms = await prisma.$queryRaw`
       SELECT
         main.ApplicationNo,

@@ -538,6 +538,194 @@ router.get('/mainform/details', protect, async function (req, res, next) {
   }
 });
 
+//Get detail of one form
+router.get('/FileFolder', protect, async function (req, res, next) {
+  try {
+    const { FileNo } = req.query;
+
+    // Find the mainAppForm with the provided ApplicationNo in the database
+    const mainAppForm = await prisma.mainAppForm.findFirst({
+      where: {
+        FileNo: FileNo,
+      },
+    });
+
+    // If form not found, return error
+    if (!mainAppForm) {
+      return res.status(404).json({ error: 'Form not found' });
+    }
+
+    
+
+    // Find the latest date for the FileNo in the ReceiptTbl
+    const latestReceiptDate = await prisma.receiptTbl.findFirst({
+      where: {
+        ReceiptNo: parseInt(mainAppForm.ApplicationNo),
+        ReceivedAmount: {
+          gt: 0, 
+        },
+      },
+      orderBy: {
+        Date: 'desc', 
+      },
+    });
+
+
+
+    mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0]
+    mainAppForm.DevelopmentChargesDate = mainAppForm.DevelopmentChargesDate?.toISOString().split('T')[0]
+    mainAppForm.TransferDate = mainAppForm.TransferDate?.toISOString().split('T')[0]
+    mainAppForm.RefundDate = mainAppForm.RefundDate?.toISOString().split('T')[0]
+    mainAppForm.Registry_Date = mainAppForm.Registry_Date?.toISOString().split('T')[0]
+    mainAppForm.inteqal_date = mainAppForm.inteqal_date?.toISOString().split('T')[0]
+    
+
+    // Calculate the difference in months between the latest receipt date and today's date
+    const today = new Date();
+    const latestDate = latestReceiptDate ? new Date(latestReceiptDate.Date) : null;
+
+    const result = await prisma.$queryRaw`
+      SELECT SUM(ReceivedAmount) As Total_Receieved
+    FROM [pakdempk].[dbo].[ReceiptTbl]
+    where ReceiptNo = ${mainAppForm.ApplicationNo}
+    group by ReceiptNo`;
+
+
+    let statusData = {};
+
+    if(result[0].Total_Receieved >= mainAppForm.TotalAmount ){
+      statusData = { status: 'Cleared' };
+    }
+    else if (!latestDate) {
+      statusData = { status: 'active' };
+    } 
+    else {
+      const monthDifference = (today.getFullYear() - latestDate.getFullYear()) * 12 +
+        (today.getMonth() - latestDate.getMonth());
+
+      let status;
+      let reason = '';
+
+      if (monthDifference < 3) {
+        if(monthDifference > 1 )
+          {
+            status = 'active';
+            reason = `installment pending from ${monthDifference} months`;
+          }
+          else{
+            status = 'active';
+            reason = ``;
+          }
+        } else if (monthDifference < 6) {
+        status = 'inactive';
+        reason = `Due to installment pending from ${monthDifference} months`;
+      } else {
+        status = 'cancelled';
+        reason = `Due to installment pending from ${monthDifference} months`;
+      }
+
+      statusData = { status, reason };
+    }
+
+    const receipts = await prisma.receiptTbl.findMany({
+      where:{
+        ReceiptNo : parseInt(mainAppForm.ApplicationNo),
+        ReceivedAmount: {
+          gt: 0, 
+        },
+      }
+    ,
+    select : {
+      Id:true,
+      FileNo : true,
+      Date : true,
+      ReceivedAmount : true,
+      ReceivedFrom:true,
+      Amount_For_The_Month_Of : true,
+      Receipt:true,
+      Plot_No:true,
+      Remarks:true
+    }
+    })
+
+    const finalizedReceipts = receipts.map((item)=>{
+      return {
+        Id:item.Id,
+        File_No : item.FileNo,
+          Date: item.Date.toISOString().split('T')[0],
+          Received_Amount : item.ReceivedAmount,
+          Received_From:item.ReceivedFrom,
+          Amount_For_The_Month_Of : item.Amount_For_The_Month_Of,
+          Receipt:item.Receipt,
+          Plot_No:item.Plot_No,
+          Remarks:item.Remarks,
+      };
+
+    })
+
+    const mainForms = await prisma.$queryRaw`
+      SELECT
+        main.ApplicationNo,
+        main.FileNo as File_No,
+        main.ApplicantName as Applicant_Name,
+        main.TotalAmount as Total_Amount,
+        main.CommissionPercentage as Commission_Percentage,
+		main.GrandTotal as Down_Payment_Commission,
+		(main.DownPayment * (CAST(main.GrandTotal AS DECIMAL) / 100)) as Down_Payment_Paid,
+        (main.TotalAmount * (CAST(main.CommissionPercentage AS DECIMAL) / 100)) as Total_Commission,
+		  (Select Sum(r.CommAmount) from ReceiptTbl r where r.ReceiptNo = main.ApplicationNo) as Amount_Paid
+      FROM
+        MainAppForm main
+      INNER JOIN
+        AgentTbl agent ON main.Agent = agent.AgentID
+      WHERE
+        main.FileNo = ${FileNo}
+    `;
+
+const commission = mainForms.map((mainForm) => {
+
+  const totalCommission = parseInt(mainForm.Total_Commission) || 0;
+  const amountPaid = parseInt(mainForm.Amount_Paid) || 0;
+  const downPaymentPaid = parseInt(mainForm.Down_Payment_Paid) || 0;
+  
+  const balance = parseInt(totalCommission - downPaymentPaid - amountPaid);
+
+  return {
+    ApplicationNo: mainForm.ApplicationNo,
+    File_No: mainForm.File_No,
+    Applicant_Name: mainForm.Applicant_Name,
+    Total_Amount: mainForm.Total_Amount,
+    Commission_Percentage: mainForm.Commission_Percentage,
+    Total_Commission: totalCommission,
+    Down_Payment_Paid: downPaymentPaid,
+    Down_Payment_Commission : mainForm.Down_Payment_Commission,
+    Amount_Paid: amountPaid,
+    Balance: balance
+  };
+});
+
+
+    const jsonSerializer = JSONbig({ storeAsString: true });
+
+
+    const responseData = {
+  ...mainAppForm,
+  ...statusData,
+  receipts: Object.values(finalizedReceipts),
+  commission : commission
+};
+
+    // Convert the response data to a JSON string
+    const serializedResponseData = jsonSerializer.stringify(responseData);
+    
+    // Send the combined data as the response
+    return res.send(serializedResponseData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 router.put('/mainform/update' ,protect,isAdmin,async function (req, res, next) {

@@ -18,12 +18,14 @@ router.post('/login', async function (req, res, next) {
   try {
 
     const {
-        CNICNo
+        CNICNo,
+        FileNo
     } = req.body
 
     const mainAppForm = await prisma.mainAppForm.findFirst({
         where: {
             CNICNo: CNICNo,
+            FileNo : FileNo
         },
       });
   
@@ -31,7 +33,7 @@ router.post('/login', async function (req, res, next) {
       if (!mainAppForm) {
         return res.status(404).json({
             success: false,
-            message: `No User with such CNIC Exists.`
+            message: `No User with such CNIC and File Number Exists.`
           });
       }
       else{
