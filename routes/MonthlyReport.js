@@ -90,7 +90,7 @@ router.get('/', protect,ExpenditureAuthorization, async function (req, res, next
     };
 
 
-    console.log(result)
+  
     const serializedallresult = jsonSerializer.stringify(result);
 
     res.send(serializedallresult);
