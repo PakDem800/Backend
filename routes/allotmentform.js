@@ -1304,10 +1304,9 @@ router.get('/refundfile/details', protect, async function (req, res, next) {
       },
     });
     
-    const Total_Paid_Amount = receiptTotal._sum.ReceivedAmount + mainAppForm.DownPayment
+    const Total_Paid_Amount = parseFloat(receiptTotal._sum.ReceivedAmount) + parseFloat(mainAppForm.DownPayment)
 
 
-    console.log(Total_Paid_Amount)
 
    mainAppForm.Date =  mainAppForm.Date?.toISOString().split('T')[0]
    mainAppForm.DevelopmentChargesDate =  mainAppForm.DevelopmentChargesDate?.toISOString().split('T')[0]
@@ -1320,7 +1319,6 @@ router.get('/refundfile/details', protect, async function (req, res, next) {
    const refundData = {
     ...mainAppForm , Total_Paid_Amount
    }
-   console.log(refundData)
     // Convert the response data to a JSON string
     const serializedResponseData = jsonSerializer.stringify(refundData);
     

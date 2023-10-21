@@ -48,6 +48,118 @@ router.post('/login', async function (req, res, next) {
   }
 });
 
+// router.get('/mainform/details', async function (req, res, next) {
+//     try {
+//       const { CNICNo } = req.query;
+  
+//       // Find the mainAppForm with the provided ApplicationNo in the database
+//       const mainAppForm = await prisma.mainAppForm.findFirst({
+//         where: {
+//             CNICNo: CNICNo,
+//         },
+//         select :{
+//                 ApplicationNo : true,
+//                 Date : true
+//                 ,FileNo : true
+//                 ,FileType : true
+//                 ,Area : true
+//                 ,PlotNo : true
+//                 ,PlotID : true
+//                 ,Phase : true
+//                 ,Block : true
+//                 ,Total_Installment : true
+//                 ,PlotLocation : true
+//                 ,ApplicantName : true
+//                 ,FatherOrHusband : true
+//                 ,CNICNo : true
+//                 ,ContactNo : true
+//                 ,PermanentAddress : true
+//                 ,PostalAddress : true
+//                 ,Nok : true
+//                 ,NoKFatherName : true
+//                 ,NokSRelation : true
+//                 ,NoKAddress : true
+//                 ,Refrence : true
+//                 ,ModeOfPayment : true
+//                 ,TotalAmount : true
+//                 ,DownPayment : true
+//         }
+//       });
+  
+//       // If form not found, return error
+//       if (!mainAppForm) {
+//         return res.status(404).json({ error: 'Form not found' });
+//       }
+  
+     
+  
+//       // Find the latest date for the FileNo in the ReceiptTbl
+//       const latestReceiptDate = await prisma.receiptTbl.findFirst({
+//         where: {
+//           ReceiptNo: parseInt(mainAppForm.ApplicationNo),
+//           ReceivedAmount: {
+//             gt: 0, 
+//           },
+//         },
+//         orderBy: {
+//           Date: 'desc', 
+//         },
+//       });
+  
+//       mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0]
+     
+      
+  
+//       // Calculate the difference in months between the latest receipt date and today's date
+//       const today = new Date();
+//       const latestDate = latestReceiptDate ? new Date(latestReceiptDate.Date) : null;
+  
+//       let statusData = {};
+  
+//       if (!latestDate) {
+//         statusData = { status: 'active' };
+//       } else {
+//         const monthDifference = (today.getFullYear() - latestDate.getFullYear()) * 12 +
+//           (today.getMonth() - latestDate.getMonth());
+  
+//         let status;
+//         let reason = '';
+  
+//         if (monthDifference < 3) {
+//           if(monthDifference > 1 )
+//             {
+//               status = 'active';
+//               reason = `installment pending from ${monthDifference} months`;
+//             }
+//             else{
+//               status = 'active';
+//               reason = ``;
+//             }
+//           } else if (monthDifference < 6) {
+//           status = 'inactive';
+//           reason = `Due to installment pending from ${monthDifference} months`;
+//         } else {
+//           status = 'cancelled';
+//           reason = `Due to installment pending from ${monthDifference} months`;
+//         }
+  
+//         statusData = { status, reason };
+//       }
+  
+//       // Combine status and reason inside mainAppForm object
+//       const responseData = { ...mainAppForm, ...statusData };
+  
+//       // Convert the response data to a JSON string
+//       const serializedResponseData = jsonSerializer.stringify(responseData);
+      
+//       // Send the combined data as the response
+//       res.send(serializedResponseData);
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     }
+//   });
+
 router.get('/mainform/details', async function (req, res, next) {
     try {
       const { CNICNo } = req.query;
@@ -55,35 +167,35 @@ router.get('/mainform/details', async function (req, res, next) {
       // Find the mainAppForm with the provided ApplicationNo in the database
       const mainAppForm = await prisma.mainAppForm.findFirst({
         where: {
-            CNICNo: CNICNo,
+          CNICNo: CNICNo,
         },
         select :{
-                ApplicationNo : true,
-                Date : true
-                ,FileNo : true
-                ,FileType : true
-                ,Area : true
-                ,PlotNo : true
-                ,PlotID : true
-                ,Phase : true
-                ,Block : true
-                ,Total_Installment : true
-                ,PlotLocation : true
-                ,ApplicantName : true
-                ,FatherOrHusband : true
-                ,CNICNo : true
-                ,ContactNo : true
-                ,PermanentAddress : true
-                ,PostalAddress : true
-                ,Nok : true
-                ,NoKFatherName : true
-                ,NokSRelation : true
-                ,NoKAddress : true
-                ,Refrence : true
-                ,ModeOfPayment : true
-                ,TotalAmount : true
-                ,DownPayment : true
-        }
+          ApplicationNo : true,
+          Date : true
+          ,FileNo : true
+          ,FileType : true
+          ,Area : true
+          ,PlotNo : true
+          ,PlotID : true
+          ,Phase : true
+          ,Block : true
+          ,Total_Installment : true
+          ,PlotLocation : true
+          ,ApplicantName : true
+          ,FatherOrHusband : true
+          ,CNICNo : true
+          ,ContactNo : true
+          ,PermanentAddress : true
+          ,PostalAddress : true
+          ,Nok : true
+          ,NoKFatherName : true
+          ,NokSRelation : true
+          ,NoKAddress : true
+          ,Refrence : true
+          ,ModeOfPayment : true
+          ,TotalAmount : true
+          ,DownPayment : true
+  }
       });
   
       // If form not found, return error
@@ -91,24 +203,36 @@ router.get('/mainform/details', async function (req, res, next) {
         return res.status(404).json({ error: 'Form not found' });
       }
   
-     
-  
-      // Find the latest date for the FileNo in the ReceiptTbl
-      const latestReceiptDate = await prisma.receiptTbl.findFirst({
+      // Find all receipts matching the ApplicationNo
+      const allReceipts = await prisma.receiptTbl.findMany({
         where: {
           ReceiptNo: parseInt(mainAppForm.ApplicationNo),
-          ReceivedAmount: {
-            gt: 0, 
-          },
         },
-        orderBy: {
-          Date: 'desc', 
+        select: {
+          ReceivedAmount: true,
         },
       });
   
-      mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0]
-     
-      
+      // Calculate the total received amount
+      const totalReceivedAmount = allReceipts.reduce(
+        (sum, receipt) => parseFloat(sum) + parseFloat(receipt.ReceivedAmount),
+        0
+      );
+  
+      const balanceAmount = parseFloat(mainAppForm.TotalAmount) - parseFloat(totalReceivedAmount);
+
+         const latestReceiptDate = await prisma.receiptTbl.findFirst({
+                where: {
+                  ReceiptNo: parseInt(mainAppForm.ApplicationNo),
+                    ReceivedAmount: {
+                      gt: 0, 
+                          },
+                        },
+                        orderBy: {
+                          Date: 'desc', 
+                        },
+                    });
+      mainAppForm.Date = mainAppForm.Date?.toISOString().split('T')[0];
   
       // Calculate the difference in months between the latest receipt date and today's date
       const today = new Date();
@@ -146,12 +270,18 @@ router.get('/mainform/details', async function (req, res, next) {
         statusData = { status, reason };
       }
   
-      // Combine status and reason inside mainAppForm object
-      const responseData = { ...mainAppForm, ...statusData };
+  
+      // Combine status, reason, received amount, and balance amount inside mainAppForm object
+      const responseData = {
+        ...mainAppForm,
+        ...statusData,
+        receivedAmount: totalReceivedAmount,
+        balanceAmount: balanceAmount,
+      };
   
       // Convert the response data to a JSON string
       const serializedResponseData = jsonSerializer.stringify(responseData);
-      
+  
       // Send the combined data as the response
       res.send(serializedResponseData);
     } catch (error) {
@@ -159,8 +289,7 @@ router.get('/mainform/details', async function (req, res, next) {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-
-//ok?
+  
   router.get('/receipts', async function (req, res, next) {
     try {
       const { CNICNo } = req.query;
