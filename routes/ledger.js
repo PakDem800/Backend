@@ -8,32 +8,55 @@ var { isAdmin , protect } = require('../middleware/authMiddleware')
 const jsonSerializer = JSONbig({ storeAsString: true });
 
 // Ledger Report
-router.get('/',protect, async function (req, res, next) {
-    try {
-        const allreceipt = await prisma.receiptTbl.findMany();
+router.get('/', protect, async function (req, res, next) {
+  try {
+      const mainAppForms = await prisma.mainAppForm.findMany();
+      const allreceipts = await prisma.receiptTbl.findMany();
 
-        const ledger = allreceipt.map((item) => {
-          return {
-            id: item.Id,
-            Receipt_No: item.ReceiptNo,
-            File_no: item.FileNo,
-            Date: item.Date.toISOString().split('T')[0],
-            Amount: item.ReceivedAmount,
-            Recieved_From: item.ReceivedFrom,
-            Payment_Mode : item.ModeOfPayment,
-            Corner_Charges : 0,
-            Grand_Total : 0
+      // Create a hashmap of receipts grouped by ReceiptNo
+      const receiptMap = new Map();
+      for (let receipt of allreceipts) {
+          if (!receiptMap.has(receipt.ReceiptNo)) {
+              receiptMap.set(receipt.ReceiptNo, []);
           }
-        })
-
-        const serializedallreceipt = jsonSerializer.stringify(ledger);
-    
-        res.send(serializedallreceipt);
-      } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+          receiptMap.get(receipt.ReceiptNo).push(receipt);
       }
+
+      const results = [];
+
+      // Iterate over each mainAppForm entry
+      for (let form of mainAppForms) {
+          const matchingReceipts = receiptMap.get(form.ApplicationNo) || [];
+
+          // Sum the received amounts of the matching receipts
+          const receivedAmount = matchingReceipts.reduce((sum, receipt) => BigInt(sum) + BigInt(receipt.ReceivedAmount), 0n);
+
+          // Calculate the balance
+          const balanceAmount = parseFloat(form.TotalAmount) - parseFloat(receivedAmount);
+
+          results.push({
+              Application_No : form.ApplicationNo,
+              Name : form.ApplicantName,
+              File_No: form.FileNo,
+              Date: form.Date.toISOString().split('T')[0],
+              total_amount: form.TotalAmount,
+              received_amount: receivedAmount.toString(),
+              balance_amount: balanceAmount,
+          });
+      }
+
+      const serializedresults = jsonSerializer.stringify(results);
+      // Send the combined data as the response
+      res.send(serializedresults);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
 });
+
+
+module.exports = router;
+
 
 
 
